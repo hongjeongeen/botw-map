@@ -29,6 +29,13 @@ export const PNG = {
   statue: ['statue.png', 24, 30],
   raft: ['raft.png', 27, 30],
   sidequest: ['sidequest.png', 30, 23],
+  // 2차 제공 아이콘 (32px)
+  hotspring: ['hotspring.png', 32, 32],
+  fairy: ['fairy.png', 32, 32],
+  dragon: ['dragon.png', 32, 32],
+  ore_common: ['ore_common.png', 32, 32],
+  ore_rare: ['ore_rare.png', 32, 32],
+  ore_luminous: ['ore_luminous.png', 32, 32],
 };
 
 export const iconUrl = (key) => `${BASE}icons/${PNG[key][0]}`;
@@ -56,6 +63,10 @@ export function iconKeyFor(cat, e) {
     case 'fountains': return 'fountain';
     case 'memories': return 'memory';
     case 'statues': return 'statue';
+    case 'hotsprings': return 'hotspring';
+    case 'fairies': return 'fairy';
+    case 'dragons': return 'dragon'; // 드래곤은 아이콘 하나, 이름으로 구분
+    case 'ores': return e?.name === '희귀 광석' ? 'ore_rare' : e?.name === '야광석' ? 'ore_luminous' : 'ore_common';
     case 'koroks': return 'seed';
     case 'chests': return 'treasure';
     case 'guardians': return 'guardian';
@@ -67,7 +78,7 @@ export function iconKeyFor(cat, e) {
 }
 
 /** 카테고리 대표 아이콘 (패널 행) */
-export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', koroks: 'seed', chests: 'treasure', bosses: 'lynel', guardians: 'guardian' };
+export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', hotsprings: 'hotspring', fairies: 'fairy', dragons: 'dragon', koroks: 'seed', chests: 'treasure', ores: 'ore_common', bosses: 'lynel', guardians: 'guardian' };
 
 export const iconImg = (key, cls = 'inline-icon') => `<img class="${cls}" src="${iconUrl(key)}" alt="">`;
 
