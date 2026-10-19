@@ -46,6 +46,8 @@ npm run lint:ko      # 표시 문자열에 영문/가나가 섞였는지 검사
 3. 저장소 Settings → Pages → Source를 **GitHub Actions**로 설정
 4. 이후 `main`에 push할 때마다 `.github/workflows/deploy.yml`이 빌드·배포 → `https://<사용자명>.github.io/botw-map/`
 
+현재 배포 주소: **https://hongjeongeen.github.io/botw-map/** (폰에서 홈 화면에 추가해 두면 세컨드 스크린으로 쓰기 편합니다)
+
 ## 주의
 
 지도 타일과 게임 데이터는 닌텐도의 자산이며, 이 프로젝트는 개인 용도입니다. 타일은 objmap 서버에서 바로 불러오며(핫링크) 저장소에 포함하지 않습니다.
