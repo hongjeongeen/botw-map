@@ -4,6 +4,7 @@ import { state, setSetting, isDone, doneCount, on } from '../state/store.js';
 import { esc, norm } from '../util.js';
 import { chestsHtml } from '../map/popup.js';
 import { swatchHtml, iconImg } from '../map/icons.js';
+import { dashboardHtml } from './dashboard.js';
 
 /**
  * 레이어 탭: 카테고리 켜기/끄기 + 완료 수, 종류별 필터, 던전 보물 상자 목록
@@ -12,6 +13,7 @@ export function createLayersPanel({ section, index, dungeons }) {
   const openSub = new Set();      // 펼쳐진 종류별 목록
   const subFilter = new Map();    // 카테고리 → 종류 검색어
   const openDungeon = new Set();
+  let dashOpen = true;
   const totalChests = Object.values(index.categories).reduce((n, c) => n + (c.chests ?? 0), 0);
 
   function countText(cat) {
@@ -35,11 +37,12 @@ export function createLayersPanel({ section, index, dungeons }) {
   function subListHtml(cat) {
     const rows = getLoaded(cat.id);
     if (!rows) return '<div class="muted small">불러오는 중…</div>';
-    const counts = new Map(); // 종류 → { n, sample }
+    const counts = new Map(); // 종류 → { n, d(완료), sample }
     for (const r of rows) {
       const k = r[cat.subtypes];
-      const c = counts.get(k) ?? { n: 0, sample: r };
+      const c = counts.get(k) ?? { n: 0, d: 0, sample: r };
       c.n++;
+      if (cat.trackable && isDone(r.id)) c.d++;
       counts.set(k, c);
     }
     const hidden = new Set(state.settings.hiddenSub[cat.id] ?? []);
@@ -53,10 +56,10 @@ export function createLayersPanel({ section, index, dungeons }) {
         <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="0">${q ? '검색된 것 끄기' : '모두 끄기'}</button>
         <span class="muted small">${q ? `${shown.length}/${items.length}종` : `${items.length}종`}</span>
       </div>
-      ${items.map(([name, { n, sample }]) => `
+      ${items.map(([name, { n, d, sample }]) => `
         <label class="row sub-row" data-sub-row="${esc(name)}" ${q && !norm(name).includes(q) ? 'hidden' : ''}>
           <input type="checkbox" data-subcat="${cat.id}" data-sub-name="${esc(name)}" ${hidden.has(name) ? '' : 'checked'}>
-          ${swatchHtml(cat, sample)}${esc(name)}<span class="count">${n}</span>
+          ${swatchHtml(cat, sample)}${esc(name)}<span class="count">${cat.trackable ? `${d}/${n}` : n}</span>
         </label>`).join('')}`;
   }
 
@@ -78,6 +81,7 @@ export function createLayersPanel({ section, index, dungeons }) {
   function render() {
     const s = state.settings;
     section.innerHTML = `
+      ${dashboardHtml({ dungeons, open: dashOpen })}
       <label class="row">
         <input type="checkbox" data-set="hideDone" ${s.hideDone ? 'checked' : ''}> 완료한 항목 숨기기
         <span class="count">${iconImg('treasure')} ${doneCount('chest:')}/${totalChests}</span>
@@ -142,6 +146,9 @@ export function createLayersPanel({ section, index, dungeons }) {
       d.open ? openDungeon.delete(d.dataset.dungeon) : openDungeon.add(d.dataset.dungeon);
     }
   });
+
+  // 진행률 요약 접기/펼치기 상태 기억 (toggle 은 버블링되지 않으므로 캡처 단계에서)
+  section.addEventListener('toggle', (ev) => { if (ev.target.classList?.contains('dash')) dashOpen = ev.target.open; }, true);
 
   // 종류 검색: 다시 그리지 않고 행만 숨긴다 (입력 포커스 유지)
   section.addEventListener('input', (ev) => {
