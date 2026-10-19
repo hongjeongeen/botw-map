@@ -157,7 +157,6 @@ function startAddPin() {
   pins.startAdd((g) => pinsPanel.openEditor({ x: Math.round(g.x), z: Math.round(g.z), title: '', note: '', color: '#ff5252' }));
   if (isMobile()) panel.close();
 }
-document.getElementById('add-pin').addEventListener('click', () => (pins.isAdding() ? pins.stopAdd() : startAddPin()));
 
 // 지도 플로팅 버튼: 내 위치로 / 전체 지도
 new MapButtons({

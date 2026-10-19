@@ -85,7 +85,7 @@ button, label, li, .tabs, #bar { -webkit-tap-highlight-color: transparent; }
 
 /* 검색창은 결과를 스크롤해도 탭 바 아래에 고정 */
 .search-top { position: sticky; top: 44px; z-index: 1; background: var(--panel); padding: 4px 0 6px; }
-@media (max-width: 767px) { .search-top { top: 70px; } }
+@media (max-width: 767px) { .search-top { top: 32px; } }
 
 /* 지도 플로팅 버튼 */
 .mapbtns { display: flex; flex-direction: column; gap: 8px; }
@@ -328,12 +328,15 @@ details.dungeon summary .count { margin-left: auto; color: var(--muted); }
   #bar button {
     flex: 1;
     min-height: 48px;
+    padding: 0 2px;
     background: none;
     border: 0;
     color: var(--text);
     font-size: 14px;
+    white-space: nowrap;
   }
-  #bar button.active { color: var(--accent); }
+  #bar button.active { color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+  #panel .tabs { display: none; } /* 모바일에선 하단 바가 유일한 탭 메뉴 */
 
   #panel {
     position: fixed;
@@ -357,7 +360,7 @@ details.dungeon summary .count { margin-left: auto; color: var(--muted); }
     display: block;
     position: sticky; top: 0; z-index: 2;
     flex: none;
-    width: 100%; height: 26px;
+    width: 100%; height: 32px;
     margin: 0;
     background: var(--panel);
     border-radius: 16px 16px 0 0;
@@ -366,12 +369,12 @@ details.dungeon summary .count { margin-left: auto; color: var(--muted); }
   }
   #panel .handle::before {
     content: '';
-    position: absolute; left: 50%; top: 10px;
+    position: absolute; left: 50%; top: 13px;
     width: 48px; height: 5px; margin-left: -24px;
     border-radius: 3px;
     background: var(--muted);
   }
-  #panel .tabs { top: 26px; touch-action: none; }
+  #panel > section { padding-top: 4px; }
   #bar { touch-action: none; }
 
   .leaflet-bottom { bottom: calc(var(--bar-h) + env(safe-area-inset-bottom)); }

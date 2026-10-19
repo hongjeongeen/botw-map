@@ -28,12 +28,13 @@
       <section data-tab="settings"></section>
     </aside>
 
-    <!-- 모바일 전용 하단 바 -->
+    <!-- 모바일 전용 하단 바 (유일한 탭 메뉴: 시트 안의 탭 줄은 모바일에서 숨김) -->
     <nav id="bar">
       <button data-open="layers">레이어</button>
       <button data-open="search">검색</button>
       <button data-open="nearby">주변</button>
-      <button id="add-pin">핀 추가</button>
+      <button data-open="pins">핀</button>
+      <button data-open="settings">설정</button>
     </nav>
   </div>
   <script type="module" src="/src/main.js"></script>
