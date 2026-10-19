@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-10-19T04:02:07.767Z",
+  "categories": {
+    "shrines": {
+      "count": 136,
+      "chests": 205
+    },
+    "towers": {
+      "count": 15
+    },
+    "places": {
+      "count": 70
+    },
+    "labels": {
+      "count": 622
+    },
+    "koroks": {
+      "count": 900
+    },
+    "bosses": {
+      "count": 113
+    },
+    "guardians": {
+      "count": 154
+    },
+    "enemies": {
+      "count": 4256
+    },
+    "materials": {
+      "count": 11460
+    },
+    "fountains": {
+      "count": 4
+    },
+    "memories": {
+      "count": 13
+    },
+    "dungeons": {
+      "count": 5,
+      "chests": 42
+    }
+  }
+}

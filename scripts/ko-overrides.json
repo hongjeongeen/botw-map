@@ -1,0 +1,85 @@
+{
+  "_설명": "게임 메시지 파일로 자동 조인되지 않는 한국어 표기를 수동으로 보완한다. 값마다 출처를 _출처에 적는다. 우선순위: overrides > 게임 메시지(KRko msyt) > 영문 텍스트 역조인",
+
+  "categories": {
+    "towers": "시커 타워",
+    "shrines": "사당",
+    "places": "마을·시설",
+    "labels": "지명",
+    "koroks": "코로그 열매",
+    "bosses": "강적",
+    "guardians": "가디언",
+    "enemies": "몬스터",
+    "materials": "소재",
+    "fountains": "대요정의 샘",
+    "memories": "사진기의 기억",
+    "chests": "보물 상자",
+    "dungeons": "던전",
+    "pins": "맵 핀",
+    "myLocation": "현재 위치"
+  },
+  "_출처_categories": "가디언/맵 핀/현재 위치: LayoutMsg/AppMap_00.msyt(0013, 0002, 0012). 대요정의 샘: StaticMsg/LocationMarker.msyt(WeaponCureSpring). 시커 타워/코로그 열매/신수: 나무위키·Zelda Wiki(공식 한국어판 기준). 사진기의 기억: Zelda Wiki. 강적/몬스터/소재/마을·시설/지명/던전은 게임 용어가 아닌 UI 분류명(자체 작성)",
+
+  "placeKinds": {
+    "Village": "마을",
+    "Hatago": "마구간",
+    "Castle": "하이랄 성",
+    "CheckPoint": "주요 장소",
+    "Labo": "고대 연구소",
+    "ShopBougu": "방어구점",
+    "ShopColor": "염색숍",
+    "ShopJewel": "보석점",
+    "ShopYadoya": "여관",
+    "ShopYorozu": "만물상"
+  },
+  "_출처_placeKinds": "상점 5종은 LayoutMsg/AppMap_00.msyt 범례 문구 그대로(여관 0014, 보석점 0015, 방어구점 0016, 만물상 0017, 염색숍 0021). 마구간/고대 연구소: LocationMarker 지명에서 확인. 주요 장소는 자체 분류명",
+
+  "dungeons": {},
+  "_출처_dungeons": "모두 StaticMsg/LocationMarker.msyt 에 공식 명칭이 있음 (RemainsWater→신수 바·루타, RemainsWind→신수 바·메도, RemainsFire→신수 바·루다니아, RemainsElectric→신수 바·나보리스, FinalTrial→최종 시련[영걸들의 노래 추가 콘텐츠]). 여기엔 없는 것만 추가",
+
+  "korokTypes": {
+    "Acorn in a Hole": "구멍 속 도토리 맞히기",
+    "Ball and Chain": "쇠사슬 달린 공을 구멍에 넣기",
+    "Burn the Leaves (Goatee)": "낙엽 더미 태우기",
+    "Circle of Rocks": "돌 원 완성하기",
+    "Cube Puzzle": "금속 블록 퍼즐 맞추기",
+    "Dive": "고리 안으로 다이빙",
+    "Flower Order": "꽃을 순서대로 만지기",
+    "Flower Trail": "꽃 따라가기",
+    "Goal Ring (Race)": "제한 시간 안에 고리까지 달리기",
+    "Hanging Acorn": "매달린 도토리 맞히기",
+    "Jump the Fences": "말로 울타리 넘기",
+    "Light Torch": "횃불 켜기",
+    "Matching Trees": "과일 나무 똑같이 맞추기",
+    "Melt Ice Block": "얼음 녹이기",
+    "Moving Lights": "움직이는 빛 잡기",
+    "Offering Plate": "접시에 과일 올리기",
+    "Pinwheel Acorns": "바람개비 도토리 맞히기",
+    "Pinwheel Balloons": "바람개비 풍선 맞히기",
+    "Remove Luminous Stone": "야광석 캐내기",
+    "Rock Lift": "돌 들어올리기",
+    "Rock Lift (Boulder)": "바위 들어올리기",
+    "Rock Lift (Door)": "돌문 뒤의 돌 들어올리기",
+    "Rock Lift (Leaves)": "낙엽 아래 돌 들어올리기",
+    "Rock Lift (Rock Pile)": "돌무더기 치우고 들어올리기",
+    "Rock Lift (Slab)": "석판 들어올리기",
+    "Rock Pattern": "돌 배치 맞추기",
+    "Roll a Boulder": "바위 굴려 구멍에 넣기",
+    "Shoot the Crest": "문장 과녁 맞히기",
+    "Shoot the Targets": "과녁 맞히기",
+    "Stationary Balloon": "풍선 맞히기",
+    "Stationary Lights": "빛 잡기",
+    "Take Apple from Palm Tree": "야자나무 열매 따기",
+    "Take the Stick": "막대기 뽑기"
+  },
+  "_출처_korokTypes": "게임에 공식 명칭이 없는 퍼즐 유형 — radar korok_type(영문)을 자체 한국어 설명으로 옮김. 야광석은 ActorType/Item.msyt 공식 명칭",
+
+  "actors": {
+    "Item_CookSet": "냄비",
+    "Item_CookSet_PanOnly": "냄비"
+  },
+  "_출처_actors": "냄비: 게임 내 UI에 이름이 없는 오브젝트. 공식 아이템 '냄비 뚜껑'(WeaponShield.msyt)과 같은 표기 사용",
+
+  "labels": {},
+  "_출처_labels": "MessageID → 한국어. LocationMarker.msyt에 없는 지명만 추가"
+}
