@@ -5,24 +5,39 @@ import { swatchHtml } from '../map/icons.js';
 
 const MAX_RESULTS = 60;
 
-/** 검색 탭: 검색 가능한 카테고리(지명·타워·사당·마을·대요정·기억·여신상)를 한국어 이름으로 찾는다 */
-export function createSearchPanel({ section, onPick }) {
+/**
+ * 검색 탭.
+ * - 개별 항목: 지명·타워·사당·마을·대요정·기억·여신상 (searchable 카테고리)
+ * - 종류: 소재·몬스터·강적·가디언의 종류 이름 (예: 냄비, 고고버섯, 보코블린) → 가까운 곳으로 이동 / "이것만" 표시
+ */
+export function createSearchPanel({ section, onPick, onPickKind }) {
   section.innerHTML = `
-    <input id="q" class="input" type="search" placeholder="이름 검색 (예: 쌍둥이, 마오누, 하테노)" autocomplete="off" enterkeyhint="search">
-    <div class="muted small" style="margin:6px 0">가운뎃점·띄어쓰기는 무시합니다. Enter를 누르면 첫 번째 결과로 이동합니다.</div>
-    <div id="result-info" class="muted small"></div>
+    <div class="search-top">
+      <input id="q" class="input" type="search" placeholder="이름·종류 검색 (예: 쌍둥이, 마오누, 냄비, 고고)" autocomplete="off" enterkeyhint="search">
+      <div id="result-info" class="muted small"></div>
+    </div>
+    <div class="muted small" style="margin:6px 0">가운뎃점·띄어쓰기는 무시합니다. Enter를 누르면 첫 번째 결과로 이동합니다. 종류 결과의 <b>이것만</b>을 누르면 그 종류만 지도에 표시합니다.</div>
     <ul id="results" class="list"></ul>`;
   const input = section.querySelector('#q');
   const info = section.querySelector('#result-info');
   const list = section.querySelector('#results');
 
-  let corpus = null; // [{ e, cat, name, sub }]
+  let corpus = null; // [{ e, cat, name, sub, kind?, entries? }]
   async function ensureCorpus() {
     if (corpus) return corpus;
-    const cats = CATEGORIES.filter((c) => c.searchable);
-    const all = await Promise.all(cats.map((c) => loadAndKeep(c.id)));
+    const itemCats = CATEGORIES.filter((c) => c.searchable);
+    const kindCats = CATEGORIES.filter((c) => c.subtypes === 'name');
+    const [itemRows, kindRows] = await Promise.all([
+      Promise.all(itemCats.map((c) => loadAndKeep(c.id))),
+      Promise.all(kindCats.map((c) => loadAndKeep(c.id))),
+    ]);
     corpus = [];
-    cats.forEach((cat, i) => { for (const e of all[i]) corpus.push({ e, cat, name: norm(e.name), sub: norm(e.sub ?? '') }); });
+    itemCats.forEach((cat, i) => { for (const e of itemRows[i]) corpus.push({ e, cat, name: norm(e.name), sub: norm(e.sub ?? '') }); });
+    kindCats.forEach((cat, i) => {
+      const groups = new Map();
+      for (const e of kindRows[i]) (groups.get(e.name) ?? groups.set(e.name, []).get(e.name)).push(e);
+      for (const [name, entries] of groups) corpus.push({ kind: true, e: { name }, cat, entries, name: norm(name), sub: '' });
+    });
     return corpus;
   }
 
@@ -40,6 +55,7 @@ export function createSearchPanel({ section, onPick }) {
     const q = norm(input.value);
     const my = ++seq;
     if (!q) { list.innerHTML = ''; info.textContent = ''; hits = []; return; }
+    info.textContent = corpus ? '' : '데이터 불러오는 중…';
     const c = await ensureCorpus();
     if (my !== seq) return;
     const scored = [];
@@ -51,18 +67,24 @@ export function createSearchPanel({ section, onPick }) {
     hits = scored.slice(0, MAX_RESULTS).map((x) => x.item);
     info.textContent = scored.length ? `${scored.length}개 결과${scored.length > MAX_RESULTS ? ` 중 ${MAX_RESULTS}개 표시` : ''}` : '';
     list.innerHTML = hits.length
-      ? hits.map(({ e, cat }, i) => `<li data-i="${i}">${swatchHtml(cat, e)}<span>${esc(e.name)}${e.sub ? `<div class="muted small">${esc(e.sub)}</div>` : ''}</span><span class="meta">${esc(cat.label)}</span></li>`).join('')
+      ? hits.map((h, i) => h.kind
+        ? `<li data-i="${i}">${swatchHtml(h.cat, h.entries[0])}<span>${esc(h.e.name)}<div class="muted small">${esc(h.cat.label)} 종류 · ${h.entries.length.toLocaleString()}곳 · 가까운 곳으로 이동</div></span><button type="button" class="btn small" data-only="${i}">이것만</button></li>`
+        : `<li data-i="${i}">${swatchHtml(h.cat, h.e)}<span>${esc(h.e.name)}${h.e.sub ? `<div class="muted small">${esc(h.e.sub)}</div>` : ''}</span><span class="meta">${esc(h.cat.label)}</span></li>`).join('')
       : '<li class="muted">결과가 없습니다.</li>';
+  }
+  function pick(h, only = false) {
+    if (h.kind) onPickKind(h, { only });
+    else onPick(h.e, CAT_BY_ID[h.cat.id]);
   }
   input.addEventListener('input', run);
   input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter' && hits.length) { ev.preventDefault(); const { e, cat } = hits[0]; onPick(e, CAT_BY_ID[cat.id]); input.blur(); }
+    if (ev.key === 'Enter' && hits.length) { ev.preventDefault(); pick(hits[0]); input.blur(); }
   });
   list.addEventListener('click', (ev) => {
+    const only = ev.target.closest('[data-only]');
+    if (only) { pick(hits[+only.dataset.only], true); return; }
     const li = ev.target.closest('li[data-i]');
-    if (!li) return;
-    const { e, cat } = hits[+li.dataset.i];
-    onPick(e, CAT_BY_ID[cat.id]);
+    if (li) pick(hits[+li.dataset.i]);
   });
   return { focus: () => input.focus(), query: (text) => { input.value = text; return run(); } };
 }

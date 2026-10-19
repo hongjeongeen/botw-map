@@ -305,9 +305,32 @@ function simplify(points, tol) {
   }
   return points.filter((_, i) => keep[i]);
 }
+// 지도 가장자리(X ±5000, Z ±4000)에 붙은 선분은 지도 외곽 직사각형이므로 제거하고 안쪽 경계만 남긴다
+const EDGE_X = 4985, EDGE_Z = 3985;
+function edgesOf([x, z]) {
+  const e = [];
+  if (x <= -EDGE_X) e.push('W');
+  if (x >= EDGE_X) e.push('E');
+  if (z <= -EDGE_Z) e.push('N');
+  if (z >= EDGE_Z) e.push('S');
+  return e;
+}
+function stripOuterEdge(ring) {
+  const parts = [];
+  let cur = [];
+  for (let i = 0; i < ring.length - 1; i++) {
+    const a = ring[i], b = ring[i + 1];
+    const ea = edgesOf(a), eb = edgesOf(b);
+    const onOuter = ea.some((e) => eb.includes(e)); // 같은 변 위의 선분
+    if (onOuter) { if (cur.length >= 2) parts.push(cur); cur = []; }
+    else { if (!cur.length) cur.push(a); cur.push(b); }
+  }
+  if (cur.length >= 2) parts.push(cur);
+  return parts;
+}
 const regions = Object.entries(towerAreas).map(([key, polys]) => ({
   id: `region:${key}`, cat: 'regions',
-  rings: polys.flatMap((p) => p.coordinates.map((ring) => simplify(ring, 8).map(([x, z]) => [Math.round(x), Math.round(z)]))),
+  rings: polys.flatMap((p) => p.coordinates.flatMap((ring) => stripOuterEdge(simplify(ring, 8).map(([x, z]) => [Math.round(x), Math.round(z)])))),
 }));
 missing.notes.push(`지역 경계선 점 수: ${regions.reduce((n, r) => n + r.rings.reduce((m, ring) => m + ring.length, 0), 0)} (원본 ${Object.values(towerAreas).flat().reduce((n, p) => n + p.coordinates.reduce((m, ring) => m + ring.length, 0), 0)})`);
 

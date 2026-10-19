@@ -12,7 +12,7 @@ export function initPanel() {
     panel.classList.add('open');
   }
   function close() {
-    panel.classList.remove('open');
+    panel.classList.remove('open', 'tall');
     barButtons.forEach((b) => b.classList.remove('active'));
   }
   const current = () => tabs.find((b) => b.classList.contains('active'))?.dataset.tab;
@@ -23,6 +23,19 @@ export function initPanel() {
     else show(b.dataset.open);
   }));
   panel.querySelector('.handle').addEventListener('click', close);
+
+  // 모바일: 손잡이·탭 영역을 아래로 쓸면 닫고, 위로 쓸면 더 크게 펼친다
+  let startY = null;
+  for (const grab of [panel.querySelector('.handle'), panel.querySelector('.tabs')]) {
+    grab.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+    grab.addEventListener('touchend', (e) => {
+      if (startY == null) return;
+      const dy = e.changedTouches[0].clientY - startY;
+      startY = null;
+      if (dy > 50) close();
+      else if (dy < -50) panel.classList.add('tall');
+    });
+  }
 
   return {
     show,
