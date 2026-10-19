@@ -97,6 +97,7 @@ export function createLayersPanel({ section, index, dungeons }) {
             ${kindStatus(cat)}
             <span class="count">${countText(cat)}</span>
           </label>
+          ${cat.legend ? `<div class="legend">${cat.legend.map(([c, t]) => `<span><i style="background:${c}"></i>${esc(t)}</span>`).join('')}</div>` : ''}
           ${cat.subtypes ? `
             <button type="button" class="sub-toggle" data-sub="${cat.id}">${openSub.has(cat.id) ? '▾' : '▸'} 종류별 보기</button>
             <div class="sub-list" ${openSub.has(cat.id) ? '' : 'hidden'}>${openSub.has(cat.id) ? subListHtml(cat) : ''}</div>` : ''}

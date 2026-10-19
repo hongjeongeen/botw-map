@@ -23,3 +23,24 @@ export function createRegionsLayer(map, rows) {
   for (const l of lines) group.addLayer(l);
   return { cat: { id: 'regions' }, group, entries: rows, setFilters() {}, setDone() {}, visibleEntries: () => [] };
 }
+
+const ZONE_STYLE = {
+  cold: { color: '#4fc3f7', fillColor: '#4fc3f7' },
+  heat: { color: '#ffb74d', fillColor: '#ffb74d' },
+  volcano: { color: '#ff5252', fillColor: '#ff5252' },
+};
+
+/** 기후 구역(추위·더위·화산) 색 면. 경계선 pane 아래, 타일 위 */
+export function createAreasLayer(map, rows) {
+  if (!map.getPane('climate')) map.createPane('climate').style.zIndex = 340;
+  const renderer = L.canvas({ pane: 'climate' });
+  const group = L.layerGroup();
+  for (const r of rows) {
+    const st = ZONE_STYLE[r.zone] ?? ZONE_STYLE.heat;
+    for (const poly of r.polys) {
+      const latlngs = poly.map((ring) => ring.map(([x, z]) => toLatLng(x, z)));
+      group.addLayer(L.polygon(latlngs, { renderer, pane: 'climate', interactive: false, ...st, weight: 1.5, opacity: 0.7, fillOpacity: 0.2 }));
+    }
+  }
+  return { cat: { id: 'climate' }, group, entries: rows, setFilters() {}, setDone() {}, visibleEntries: () => [] };
+}

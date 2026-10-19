@@ -397,6 +397,26 @@ const regions = Object.entries(towerAreas).map(([key, polys]) => ({
 }));
 missing.notes.push(`지역 경계선 점 수: ${regions.reduce((n, r) => n + r.rings.reduce((m, ring) => m + ring.length, 0), 0)} (원본 ${Object.values(towerAreas).flat().reduce((n, p) => n + p.coordinates.reduce((m, ring) => m + ring.length, 0), 0)})`);
 
+// ---------------------------------------------------------------- 기후 구역 (추위·더위·화산)
+console.log('objmap: 기후 구역…');
+const areaData = await fetchJson(`${OBJMAP}/area_data.json`, 'objmap/area_data.json');
+const fieldAreas = await fetchJson(`${OBJMAP}/ecosystem/FieldMapArea.json`, 'objmap/FieldMapArea.json');
+// 기후 이름 → 구역. Eldin Lv0 은 덥기만 하고 피해가 없어 제외, 사막은 낮 더위·밤 추위
+const zoneOf = (c) => (/Frost|GerudoPlateau/.test(c) ? 'cold' : /GerudoDesert/.test(c) ? 'heat' : /EldinClimateLv[12]/.test(c) ? 'volcano' : null);
+const climate = [];
+for (const a of areaData) {
+  const zone = zoneOf(a.Climate);
+  if (!zone) continue;
+  const polys = fieldAreas[String(a.AreaNumber)];
+  if (!polys) { missing.notes.push(`기후 폴리곤 없음: 지역 ${a.AreaNumber} (${a.Area})`); continue; }
+  climate.push({
+    id: `climate:${a.AreaNumber}`, cat: 'climate', zone, climate: a.Climate,
+    // 폴리곤마다 [바깥 고리, 구멍…] 구조 유지 (Leaflet polygon 이 구멍을 지원)
+    polys: polys.map((p) => p.coordinates.map((ring) => simplify(ring, 12).map(([x, z]) => [Math.round(x), Math.round(z)]))),
+  });
+}
+missing.notes.push(`기후 구역 ${climate.length}개, 점 ${climate.reduce((n, c) => n + c.polys.flat().reduce((m, r) => m + r.length, 0), 0)}`);
+
 // ---------------------------------------------------------------- 신수 등 던전 (마커 없음)
 const dungeons = [...beastChests.keys()].sort().map((mapName) => {
   const name = overrides.dungeons[mapName] ?? koLoc[mapName] ?? null;
@@ -406,7 +426,7 @@ const dungeons = [...beastChests.keys()].sort().map((mapName) => {
 
 // ---------------------------------------------------------------- 출력
 await mkdir(OUT, { recursive: true });
-const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, hotsprings, fairies, dragons, chests, ores, regions, dungeons };
+const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, hotsprings, fairies, dragons, chests, ores, regions, climate, dungeons };
 const index = { generatedAt: new Date().toISOString(), categories: {} };
 for (const [name, rows] of Object.entries(files)) {
   await writeFile(path.join(OUT, `${name}.json`), JSON.stringify(rows), 'utf8');

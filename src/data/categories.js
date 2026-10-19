@@ -5,6 +5,8 @@
 export const CATEGORIES = [
   { id: 'labels',    label: '지명',          style: 'label', color: '#e8d9a8', trackable: false, searchable: true,  minZoom: 1, defaultOn: true },
   { id: 'regions',   label: '지역 경계선',   style: 'lines', color: '#f3e3a0', trackable: false, searchable: false, minZoom: 1, defaultOn: true },
+  { id: 'climate',   label: '기후 구역',     style: 'areas', color: '#ff9800', trackable: false, searchable: false, minZoom: 1, defaultOn: true,
+    legend: [['#4fc3f7', '추위'], ['#ffb74d', '더위(사막 · 밤엔 추위)'], ['#ff5252', '화산(불 피해)']] },
   { id: 'towers',    label: '시커 타워',     style: 'icon',  color: '#4fc3f7', trackable: true,  searchable: true,  minZoom: 1, defaultOn: true },
   { id: 'shrines',   label: '사당',          style: 'icon',  color: '#ffa726', trackable: true,  searchable: true,  minZoom: 1, defaultOn: true },
   { id: 'places',    label: '마을·시설',     style: 'icon',  color: '#9ccc65', trackable: false, searchable: true,  minZoom: 1, defaultOn: true,  subtypes: 'kind' },

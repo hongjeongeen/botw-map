@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T06:35:01.371Z",
+  "generatedAt": "2026-10-19T06:44:11.647Z",
   "categories": {
     "shrines": {
       "count": 136,
@@ -55,6 +55,9 @@
     },
     "regions": {
       "count": 15
+    },
+    "climate": {
+      "count": 18
     },
     "dungeons": {
       "count": 5,

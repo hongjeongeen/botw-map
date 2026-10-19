@@ -9,7 +9,7 @@ import { loadAndKeep, loadIndex, loadCategory, getLoaded } from './data/loader.j
 import { state, setSetting, setDone, setDoneMany, on, deletePin } from './state/store.js';
 import { createCategoryLayer } from './map/layers.js';
 import { createLabelLayer } from './map/labels.js';
-import { createRegionsLayer } from './map/regions.js';
+import { createRegionsLayer, createAreasLayer } from './map/regions.js';
 import { openEntryPopup, openHtmlPopup, closePopup } from './map/popup.js';
 import { createPinsLayer } from './map/pins.js';
 import { preloadIcons } from './map/icons.js';
@@ -56,7 +56,8 @@ async function ensureLayer(cat) {
       const rows = await loadAndKeep(cat.id);
       const layer = cat.style === 'label' ? createLabelLayer(map, rows)
         : cat.style === 'lines' ? createRegionsLayer(map, rows)
-          : createCategoryLayer(cat, rows, { isDone: (id) => !!state.progress.done[id], onSelect: selectEntry });
+          : cat.style === 'areas' ? createAreasLayer(map, rows)
+            : createCategoryLayer(cat, rows, { isDone: (id) => !!state.progress.done[id], onSelect: selectEntry });
       layer.setFilters({ hideDone: state.settings.hideDone, hidden: state.settings.hiddenSub[cat.id] });
       layer.setScale?.(iconScale);
       layers[cat.id] = layer;
