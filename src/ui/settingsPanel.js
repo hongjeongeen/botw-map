@@ -1,13 +1,34 @@
+import QRCode from 'qrcode';
 import { exportBackup, importBackup } from '../state/backup.js';
 import { resetAll, state, setSetting } from '../state/store.js';
+import { makeSyncLink, readSyncLink, applySync } from '../state/sync.js';
+import { esc } from '../util.js';
 
-export function createSettingsPanel({ section }) {
+const QR_MAX = 2800; // QR(바이트 모드) 용량 한계 근처
+
+export function createSettingsPanel({ section, dungeons }) {
   function render() {
     section.innerHTML = `
-      <h3>백업</h3>
-      <div class="muted small" style="margin-bottom:8px">진행도와 맵 핀은 이 브라우저에만 저장됩니다. 다른 기기(폰 ↔ PC)로 옮기거나 보관하려면 JSON으로 내보내세요.</div>
+      <h3>기기 간 동기화</h3>
+      <div class="muted small" style="margin-bottom:8px">이 기기의 완료 기록과 맵 핀을 다른 기기로 보냅니다. 받는 기기에서 링크를 열거나 QR을 카메라로 스캔하면 기록이 <b>합쳐집니다</b>(지워지지 않음).</div>
+      <div class="pp-actions"><button type="button" class="btn primary" data-action="sync-make">다른 기기로 보내기 (QR·링크 만들기)</button></div>
+      <div id="sync-box" class="sync-box" hidden>
+        <canvas id="sync-qr" width="240" height="240"></canvas>
+        <div id="sync-info" class="muted small"></div>
+        <input id="sync-link" class="input" readonly>
+        <div class="pp-actions">
+          <button type="button" class="btn" data-action="sync-copy">링크 복사</button>
+          ${navigator.share ? '<button type="button" class="btn" data-action="sync-share">공유…</button>' : ''}
+        </div>
+      </div>
+      <div class="muted small" style="margin:10px 0 4px">다른 기기에서 복사한 링크가 있으면 붙여넣어 합치세요.</div>
+      <textarea id="sync-paste" class="input" rows="2" placeholder="https://…/botw-map/#sync=…"></textarea>
+      <div class="pp-actions"><button type="button" class="btn" data-action="sync-import">가져와서 합치기</button></div>
+
+      <h3>백업 파일</h3>
+      <div class="muted small" style="margin-bottom:8px">진행도와 맵 핀은 이 브라우저에만 저장됩니다. 보관용으로 JSON 파일로도 내보낼 수 있습니다.</div>
       <div class="pp-actions">
-        <button type="button" class="btn primary" data-action="export">JSON으로 내보내기</button>
+        <button type="button" class="btn" data-action="export">JSON으로 내보내기</button>
         <label class="btn">JSON 가져오기(병합)<input type="file" accept=".json,application/json" hidden data-action="import"></label>
       </div>
       <h3>동작</h3>
@@ -23,13 +44,77 @@ export function createSettingsPanel({ section }) {
       </div>`;
   }
 
+  async function makeSync() {
+    const box = section.querySelector('#sync-box');
+    const info = section.querySelector('#sync-info');
+    const linkEl = section.querySelector('#sync-link');
+    const canvas = section.querySelector('#sync-qr');
+    box.hidden = false;
+    info.textContent = '만드는 중…';
+    let r = await makeSyncLink({ dungeons, includePins: true });
+    let note = '';
+    if (r.url.length > QR_MAX && r.pinCount) {
+      // QR 에는 완료 기록만 담고, 링크(복사)는 전체를 담는다
+      const noPins = await makeSyncLink({ dungeons, includePins: false });
+      note = ' · 맵 핀이 많아 QR에는 완료 기록만 담겼습니다 (링크 복사에는 모두 포함)';
+      linkEl.value = r.url;
+      r = { ...noPins, pinCount: r.pinCount, qrUrl: noPins.url };
+    } else {
+      linkEl.value = r.url;
+      r.qrUrl = r.url;
+    }
+    try {
+      await QRCode.toCanvas(canvas, r.qrUrl, { width: 240, margin: 1, errorCorrectionLevel: 'L' });
+      canvas.hidden = false;
+    } catch (e) {
+      canvas.hidden = true;
+      note += ` · QR을 만들 수 없습니다(${e.message})`;
+    }
+    info.textContent = `완료 ${r.doneCount}개 · 맵 핀 ${r.pinCount}개 · 링크 ${linkEl.value.length.toLocaleString()}자${note}`;
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const el = section.querySelector('#sync-link');
+    el.focus(); el.select();
+    try { return document.execCommand('copy'); } catch { return false; }
+  }
+
+  async function importFromText(text) {
+    const r = await readSyncLink(text, dungeons);
+    const msg = `다른 기기의 완료 ${r.done.length}개, 맵 핀 ${r.pins.length}개를 이 기기와 합칠까요?${r.skipped.length ? `\n(데이터 버전이 달라 건너뜀: ${r.skipped.join(', ')})` : ''}`;
+    if (!confirm(msg)) return false;
+    applySync(r);
+    return true;
+  }
+
   section.addEventListener('click', async (ev) => {
     const a = ev.target.closest('[data-action]');
     if (!a || a.tagName === 'INPUT') return;
-    if (a.dataset.action === 'export') exportBackup();
-    if (a.dataset.action === 'reset' && confirm('정말 모든 진행도·맵 핀·설정을 지울까요? 되돌릴 수 없습니다.')) {
-      resetAll();
-      location.reload();
+    switch (a.dataset.action) {
+      case 'sync-make': await makeSync(); break;
+      case 'sync-copy': {
+        const ok = await copyText(section.querySelector('#sync-link').value);
+        a.textContent = ok ? '복사됨!' : '복사 실패 — 직접 선택해 복사하세요';
+        setTimeout(() => { a.textContent = '링크 복사'; }, 2000);
+        break;
+      }
+      case 'sync-share':
+        try { await navigator.share({ title: '하이랄 지도 동기화', url: section.querySelector('#sync-link').value }); } catch {}
+        break;
+      case 'sync-import': {
+        const text = section.querySelector('#sync-paste').value.trim();
+        if (!text) { alert('링크를 붙여넣어 주세요.'); break; }
+        try {
+          if (await importFromText(text)) { alert('합쳤습니다.'); section.querySelector('#sync-paste').value = ''; }
+        } catch (e) { alert(`가져오기 실패: ${e.message}`); }
+        break;
+      }
+      case 'export': exportBackup(); break;
+      case 'reset':
+        if (confirm('정말 모든 진행도·맵 핀·설정을 지울까요? 되돌릴 수 없습니다.')) { resetAll(); location.reload(); }
+        break;
+      default:
     }
   });
   section.addEventListener('change', async (ev) => {
@@ -50,5 +135,5 @@ export function createSettingsPanel({ section }) {
   });
 
   render();
-  return { render };
+  return { render, importFromText };
 }

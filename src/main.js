@@ -23,9 +23,11 @@ import { createSettingsPanel } from './ui/settingsPanel.js';
 import { esc, isMobile } from './util.js';
 
 // ---------------------------------------------------------------- 지도
+// 시작 시 해시를 먼저 보관: 지도 이동(moveend)이 해시를 덮어쓰기 전에 #sync= 링크를 읽어야 한다
+const initialHash = location.hash;
 // URL 해시 #<줌>/<X>/<Z> 로 현재 위치를 공유·복원 (예: #7/-560/1694 = 시작의 탑)
 function parseHash() {
-  const m = location.hash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+  const m = initialHash.match(/^#(\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
   return m ? { zoom: +m[1], x: +m[2], z: +m[3] } : null;
 }
 const map = createMap(document.getElementById('map'), parseHash() ?? state.settings.lastView);
@@ -196,7 +198,19 @@ const pinsPanel = createPinsPanel({
   onFocusPin: (id) => { pins.focus(id); if (isMobile()) panel.close(); },
   onStartAdd: startAddPin,
 });
-createSettingsPanel({ section: panel.section('settings') });
+const settingsPanel = createSettingsPanel({ section: panel.section('settings'), dungeons });
+
+// 다른 기기에서 만든 동기화 링크(#sync=…)로 열렸으면 합칠지 물어본다
+if (/^#sync=/.test(initialHash)) {
+  try {
+    const merged = await settingsPanel.importFromText(initialHash);
+    if (merged) { layersPanel.render(); nearby?.render(); }
+  } catch (e) {
+    alert(`동기화 링크를 읽지 못했습니다: ${e.message}`);
+  }
+  const { x, z } = toGame(map.getCenter());
+  history.replaceState(null, '', `#${map.getZoom()}/${Math.round(x)}/${Math.round(z)}`);
+}
 
 // ---------------------------------------------------------------- 팝업 안 버튼/체크박스 (이벤트 위임)
 /** 로드된 데이터에서 id 로 항목 찾기 (완료 체크 → 현재 위치 이동용) */
