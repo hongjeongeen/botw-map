@@ -255,6 +255,7 @@ details.dungeon summary .count { margin-left: auto; color: var(--muted); }
 
 /* ---------- 동기화 ---------- */
 .sync-box { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 10px 0; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+.sync-box[hidden] { display: none; } /* display:flex 가 hidden 속성을 덮어쓰지 않도록 */
 .sync-box canvas { background: #fff; border-radius: 8px; padding: 6px; max-width: 100%; }
 .sync-box input { font-size: 12px; }
 
