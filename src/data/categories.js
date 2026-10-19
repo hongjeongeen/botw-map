@@ -15,6 +15,8 @@ export const CATEGORIES = [
   { id: 'dragons',   label: '드래곤 출현 지점', style: 'icon', color: '#9ccc65', trackable: false, searchable: true, minZoom: 1, defaultOn: false },
   { id: 'fairies',   label: '요정',          style: 'icon',  color: '#ffb6e6', trackable: false, searchable: false, minZoom: 3, defaultOn: false },
   { id: 'koroks',    label: '코로그 열매',   style: 'dot',   color: '#e6d64a', trackable: true,  searchable: false, minZoom: 4, defaultOn: false },
+  { id: 'chests',    label: '보물 상자',     style: 'dot',   color: '#ffd54f', trackable: true,  searchable: false, minZoom: 4, defaultOn: false, subtypes: 'name' },
+  { id: 'ores',      label: '광석',          style: 'dot',   color: '#b0bec5', trackable: false, searchable: false, minZoom: 5, defaultOn: false, subtypes: 'name' },
   { id: 'bosses',    label: '강적',          style: 'dot',   color: '#ef5350', trackable: true,  searchable: false, minZoom: 3, defaultOn: false, subtypes: 'name' },
   { id: 'guardians', label: '가디언',        style: 'dot',   color: '#ff8a65', trackable: false, searchable: false, minZoom: 3, defaultOn: false, subtypes: 'name' },
   { id: 'enemies',   label: '몬스터',        style: 'dot',   color: '#ab47bc', trackable: false, searchable: false, minZoom: 5, defaultOn: false, subtypes: 'name' },

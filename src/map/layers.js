@@ -7,7 +7,7 @@ import { IconMarker } from './canvasIcons.js';
 export const canvas = L.canvas({ tolerance: 8 });
 
 // 캔버스 아이콘 가로 폭(px)
-const CANVAS_ICON_WIDTH = { koroks: 22, bosses: 28, guardians: 26, materials: 22 };
+const CANVAS_ICON_WIDTH = { koroks: 22, bosses: 28, guardians: 26, materials: 22, chests: 22, ores: 20 };
 
 /** DOM 마커용 L.icon (랜드마크). scale: 줌이 낮을 때 축소 */
 export function markerIcon(cat, key, done, scale = 1) {

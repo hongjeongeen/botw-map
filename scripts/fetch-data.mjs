@@ -276,6 +276,33 @@ for (const r of statueRows.sort((a, b) => a.hash_id - b.hash_id)) {
   });
 }
 
+// ---------------------------------------------------------------- 필드 보물 상자 (내용물 포함, _Aoc = 추가 콘텐츠)
+console.log('radar: 필드 보물 상자…');
+const fieldChestRows = await radar('MainField', 'actor:^"TBox_"', 'mainfield-tbox');
+const chests = fieldChestRows.map((r) => {
+  const dropActor = Array.isArray(r.drop) && typeof r.drop[1] === 'string' ? r.drop[1] : null;
+  const item = dropActor ? actorName(dropActor) : null;
+  return {
+    id: `fchest:${r.hash_id}`, cat: 'chests', name: item ?? overrides.categories.chests, item, dlc: /_Aoc/.test(r.name),
+    actor: r.name, x: r1(r.pos[0]), y: r1(r.pos[1]), z: r1(r.pos[2]),
+  };
+});
+
+// ---------------------------------------------------------------- 광석 (일반·희귀·야광석 채굴 지점)
+console.log('radar: 광석…');
+const oreRows = [
+  ...(await radar('MainField', 'name:"Ore Deposit"', 'ore')),
+  ...(await radar('MainField', 'name:"Luminous Stone Deposit"', 'ore-luminous')),
+];
+const oreKind = (actor) => (/Mineral_B/.test(actor) ? '희귀 광석' : /Mineral_C/.test(actor) ? '야광석' : '광석');
+const seenOre = new Set();
+const ores = [];
+for (const r of oreRows) {
+  if (seenOre.has(r.hash_id)) continue;
+  seenOre.add(r.hash_id);
+  ores.push({ id: `ore:${r.hash_id}`, cat: 'ores', name: oreKind(r.name), actor: r.name, x: r1(r.pos[0]), y: r1(r.pos[1]), z: r1(r.pos[2]) });
+}
+
 // ---------------------------------------------------------------- 온천 (지명 중 '온천'으로 끝나는 곳)
 const hotsprings = labels.filter((l) => /온천$/.test(l.name)).map((l) => ({
   id: `spring:${l.id.replace('label:', '')}`, cat: 'hotsprings', name: l.name, x: l.x, y: l.y, z: l.z,
@@ -379,7 +406,7 @@ const dungeons = [...beastChests.keys()].sort().map((mapName) => {
 
 // ---------------------------------------------------------------- 출력
 await mkdir(OUT, { recursive: true });
-const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, hotsprings, fairies, dragons, regions, dungeons };
+const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, hotsprings, fairies, dragons, chests, ores, regions, dungeons };
 const index = { generatedAt: new Date().toISOString(), categories: {} };
 for (const [name, rows] of Object.entries(files)) {
   await writeFile(path.join(OUT, `${name}.json`), JSON.stringify(rows), 'utf8');

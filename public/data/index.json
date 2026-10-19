@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T06:30:53.627Z",
+  "generatedAt": "2026-10-19T06:35:01.371Z",
   "categories": {
     "shrines": {
       "count": 136,
@@ -46,6 +46,12 @@
     },
     "dragons": {
       "count": 7
+    },
+    "chests": {
+      "count": 1315
+    },
+    "ores": {
+      "count": 3752
     },
     "regions": {
       "count": 15

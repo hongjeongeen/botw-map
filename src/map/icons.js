@@ -38,7 +38,15 @@ const dragonSvg = (color) => svgIcon(
    <path d="M8 42 C18 18 28 18 32 32 C36 46 46 46 56 22" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>
    <circle cx="56" cy="22" r="7" fill="${color}" stroke="#1d1d1d" stroke-width="3"/><circle cx="58" cy="20" r="2" fill="#1d1d1d"/>`,
 );
+const oreSvg = (gem) => svgIcon(
+  `<path d="M8 50 L18 26 L32 18 L48 24 L56 48 Z" fill="#8a8f93" stroke="#1d1d1d" stroke-width="3" stroke-linejoin="round"/>
+   <path d="M24 38 l7-12 7 12-7 9z" fill="${gem}" stroke="#1d1d1d" stroke-width="2" stroke-linejoin="round"/>
+   <path d="M39 42 l4-7 5 7-5 6z" fill="${gem}" stroke="#1d1d1d" stroke-width="2" stroke-linejoin="round"/>`,
+);
 Object.assign(PNG, {
+  ore: [oreSvg('#e0e0e0'), 30, 30],
+  ore_rare: [oreSvg('#ffd54f'), 30, 30],
+  ore_luminous: [oreSvg('#64b5f6'), 30, 30],
   hotspring: [svgIcon(
     `<ellipse cx="32" cy="46" rx="24" ry="10" fill="#5fb3c9" stroke="#1d1d1d" stroke-width="3"/>
      <path d="M20 36c-5-7 5-11 0-18M32 34c-5-7 5-11 0-18M44 36c-5-7 5-11 0-18" fill="none" stroke="#1d1d1d" stroke-width="7" stroke-linecap="round"/>
@@ -76,6 +84,8 @@ export function iconKeyFor(cat, e) {
     case 'fairies': return 'fairy';
     case 'dragons': return /Fire/.test(e?.actor ?? '') ? 'dragon_fire' : /Electric/.test(e?.actor ?? '') ? 'dragon_electric' : 'dragon_ice';
     case 'koroks': return 'seed';
+    case 'chests': return 'treasure';
+    case 'ores': return e?.name === '희귀 광석' ? 'ore_rare' : e?.name === '야광석' ? 'ore_luminous' : 'ore';
     case 'guardians': return 'guardian';
     case 'places': return PLACE_ICON[e?.kind] ?? 'settlement';
     case 'bosses': return BOSS_KEYS.find(([re]) => re.test(e?.actor ?? ''))?.[1] ?? null;
@@ -85,7 +95,7 @@ export function iconKeyFor(cat, e) {
 }
 
 /** 카테고리 대표 아이콘 (패널 행) */
-export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', hotsprings: 'hotspring', fairies: 'fairy', dragons: 'dragon_electric', koroks: 'seed', bosses: 'lynel', guardians: 'guardian' };
+export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', hotsprings: 'hotspring', fairies: 'fairy', dragons: 'dragon_electric', koroks: 'seed', chests: 'treasure', ores: 'ore', bosses: 'lynel', guardians: 'guardian' };
 
 export const iconImg = (key, cls = 'inline-icon') => `<img class="${cls}" src="${iconUrl(key)}" alt="">`;
 
