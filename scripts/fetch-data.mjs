@@ -214,9 +214,10 @@ const enemyRows = await radar('MainField', 'actor:^"Enemy_"', 'enemies');
 const BOSS_RE = /^Enemy_(Lynel|Giant|Golem_(Junior|Middle|Senior|Fire|Ice)|Sandworm)/;
 const GUARDIAN_RE = /^Enemy_Guardian_/;
 const SKIP_ACTORS = new Set(['Enemy_Ganon']);
+const SKIP_RE = /^Enemy_Dragon_/; // 드래곤은 별도 레이어(실제 출현 지점)로
 const bosses = [], guardians = [], enemies = [];
 for (const r of enemyRows) {
-  if (SKIP_ACTORS.has(r.name)) continue;
+  if (SKIP_ACTORS.has(r.name) || SKIP_RE.test(r.name)) continue;
   const name = actorName(r.name);
   if (!name) continue;
   const e = { id: `enemy:${r.hash_id}`, name, actor: r.name, x: r1(r.pos[0]), y: r1(r.pos[1]), z: r1(r.pos[2]) };
@@ -274,6 +275,41 @@ for (const r of statueRows.sort((a, b) => a.hash_id - b.hash_id)) {
     actor: r.name, x: r1(r.pos[0]), y: r1(r.pos[1]), z: r1(r.pos[2]),
   });
 }
+
+// ---------------------------------------------------------------- 온천 (지명 중 '온천'으로 끝나는 곳)
+const hotsprings = labels.filter((l) => /온천$/.test(l.name)).map((l) => ({
+  id: `spring:${l.id.replace('label:', '')}`, cat: 'hotsprings', name: l.name, x: l.x, y: l.y, z: l.z,
+}));
+
+// ---------------------------------------------------------------- 요정 (Animal_Insect_F = 요정)
+console.log('radar: 요정…');
+const fairyAnimalRows = await radar('MainField', 'actor:^"Animal_Insect_F"', 'fairy-animal', 500);
+const fairies = fairyAnimalRows.filter((r) => r.name === 'Animal_Insect_F').map((r) => ({
+  id: `fairy:${r.hash_id}`, cat: 'fairies', name: actorName(r.name) ?? '요정', sub: nearestLabel(r.pos[0], r.pos[2], 800, 8),
+  x: r1(r.pos[0]), y: r1(r.pos[1]), z: r1(r.pos[2]),
+}));
+
+// ---------------------------------------------------------------- 드래곤 출현 지점
+// radar 의 드래곤 배치는 맵 밖 대기 위치(-4300,-3500, 높이 -500)라 쓸 수 없다. 퀘스트 조우 지점(라넬산, 게임 데이터)과
+// 커뮤니티 공략으로 잘 알려진 출현 장소를 공식 지명 좌표로 표시한다.
+const labelByName = (name) => labels.find((l) => l.name === name);
+// 지명은 공식 한국어 명칭 (영문 공략의 Tanagar Canyon = 쿠쿠자 계곡, Riola Spring = 우라이트호, Eldin Mountains = 올딘 산맥)
+const DRAGON_SPOTS = [
+  { actor: 'Enemy_Dragon_Fire', place: '올딘 산맥', note: '커뮤니티 공략 기준 출현 장소' },
+  { actor: 'Enemy_Dragon_Fire', place: '쿠쿠자 계곡', note: '커뮤니티 공략 기준 비행 경로' },
+  { actor: 'Enemy_Dragon_Electric', place: '하일리아호', note: '커뮤니티 공략 기준 출현 장소' },
+  { actor: 'Enemy_Dragon_Electric', place: '우라이트호', note: '커뮤니티 공략 기준 출현 장소' },
+  { actor: 'Enemy_Dragon_Electric', place: '필로드래곤 대지', note: '커뮤니티 공략 기준 비행 경로' },
+  { actor: 'Enemy_Dragon_Ice', place: '넬드래곤 설원', note: '커뮤니티 공략 기준 비행 경로' },
+];
+const dragons = [];
+for (const s of DRAGON_SPOTS) {
+  const l = labelByName(s.place);
+  if (!l) { missing.notes.push(`드래곤 출현 지명 없음: ${s.place}`); continue; }
+  dragons.push({ id: `dragon:${s.actor}:${l.id.replace('label:', '')}`, cat: 'dragons', name: actorName(s.actor), sub: `${s.place} · ${s.note}`, actor: s.actor, x: l.x, y: l.y, z: l.z });
+}
+const naydra = enemyRows.find((r) => r.name === 'Enemy_Dragon_Grudge');
+if (naydra) dragons.push({ id: `dragon:${naydra.hash_id}`, cat: 'dragons', name: actorName('Enemy_Dragon_Ice'), sub: '라넬산 · 게임 데이터(퀘스트 조우 지점)', actor: 'Enemy_Dragon_Ice', x: r1(naydra.pos[0]), y: r1(naydra.pos[1]), z: r1(naydra.pos[2]) });
 
 // ---------------------------------------------------------------- 지역 경계선 (시커 타워 영역 폴리곤)
 console.log('objmap: 타워 영역 폴리곤…');
@@ -343,7 +379,7 @@ const dungeons = [...beastChests.keys()].sort().map((mapName) => {
 
 // ---------------------------------------------------------------- 출력
 await mkdir(OUT, { recursive: true });
-const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, regions, dungeons };
+const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, hotsprings, fairies, dragons, regions, dungeons };
 const index = { generatedAt: new Date().toISOString(), categories: {} };
 for (const [name, rows] of Object.entries(files)) {
   await writeFile(path.join(OUT, `${name}.json`), JSON.stringify(rows), 'utf8');

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T05:35:50.489Z",
+  "generatedAt": "2026-10-19T06:30:53.627Z",
   "categories": {
     "shrines": {
       "count": 136,
@@ -24,7 +24,7 @@
       "count": 154
     },
     "enemies": {
-      "count": 4256
+      "count": 4248
     },
     "materials": {
       "count": 11460
@@ -37,6 +37,15 @@
     },
     "statues": {
       "count": 13
+    },
+    "hotsprings": {
+      "count": 4
+    },
+    "fairies": {
+      "count": 31
+    },
+    "dragons": {
+      "count": 7
     },
     "regions": {
       "count": 15
