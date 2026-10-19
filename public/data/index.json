@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T04:02:07.767Z",
+  "generatedAt": "2026-10-19T05:08:19.767Z",
   "categories": {
     "shrines": {
       "count": 136,
@@ -34,6 +34,12 @@
     },
     "memories": {
       "count": 13
+    },
+    "statues": {
+      "count": 13
+    },
+    "regions": {
+      "count": 15
     },
     "dungeons": {
       "count": 5,

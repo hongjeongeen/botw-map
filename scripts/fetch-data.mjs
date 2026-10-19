@@ -262,6 +262,55 @@ for (const r of memoryRows) {
 }
 memories.sort((a, b) => a.no - b.no);
 
+// ---------------------------------------------------------------- 여신상
+console.log('radar: 여신상…');
+const statueRows = await radar('MainField', 'name:"Goddess Statue"', 'statue', 500);
+// 같은 자리에 연출용 변형이 여러 개 놓여 있으므로 30 단위 안의 중복은 하나만 남긴다
+const statues = [];
+for (const r of statueRows.sort((a, b) => a.hash_id - b.hash_id)) {
+  if (statues.some((s) => Math.hypot(s.x - r.pos[0], s.z - r.pos[2]) < 30)) continue;
+  statues.push({
+    id: `statue:${r.hash_id}`, cat: 'statues', name: overrides.categories.statues, sub: nearestLabel(r.pos[0], r.pos[2], 800, 8),
+    actor: r.name, x: r1(r.pos[0]), y: r1(r.pos[1]), z: r1(r.pos[2]),
+  });
+}
+
+// ---------------------------------------------------------------- 지역 경계선 (시커 타워 영역 폴리곤)
+console.log('objmap: 타워 영역 폴리곤…');
+const towerAreas = await fetchJson(`${OBJMAP}/ecosystem/MapTower.json`, 'objmap/MapTower.json');
+
+// Douglas–Peucker 단순화 (반복형). 원본은 영역당 수천 점이라 그대로 쓰기엔 너무 크다
+function simplify(points, tol) {
+  if (points.length <= 2) return points;
+  const keep = new Uint8Array(points.length);
+  keep[0] = keep[points.length - 1] = 1;
+  const stack = [[0, points.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop();
+    const [ax, ay] = points[a];
+    const [bx, by] = points[b];
+    const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+    let maxD = 0, idx = -1;
+    for (let i = a + 1; i < b; i++) {
+      const [px, py] = points[i];
+      let d;
+      if (len2 === 0) d = Math.hypot(px - ax, py - ay);
+      else {
+        const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / len2));
+        d = Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+      }
+      if (d > maxD) { maxD = d; idx = i; }
+    }
+    if (maxD > tol && idx > 0) { keep[idx] = 1; stack.push([a, idx], [idx, b]); }
+  }
+  return points.filter((_, i) => keep[i]);
+}
+const regions = Object.entries(towerAreas).map(([key, polys]) => ({
+  id: `region:${key}`, cat: 'regions',
+  rings: polys.flatMap((p) => p.coordinates.map((ring) => simplify(ring, 8).map(([x, z]) => [Math.round(x), Math.round(z)]))),
+}));
+missing.notes.push(`지역 경계선 점 수: ${regions.reduce((n, r) => n + r.rings.reduce((m, ring) => m + ring.length, 0), 0)} (원본 ${Object.values(towerAreas).flat().reduce((n, p) => n + p.coordinates.reduce((m, ring) => m + ring.length, 0), 0)})`);
+
 // ---------------------------------------------------------------- 신수 등 던전 (마커 없음)
 const dungeons = [...beastChests.keys()].sort().map((mapName) => {
   const name = overrides.dungeons[mapName] ?? koLoc[mapName] ?? null;
@@ -271,7 +320,7 @@ const dungeons = [...beastChests.keys()].sort().map((mapName) => {
 
 // ---------------------------------------------------------------- 출력
 await mkdir(OUT, { recursive: true });
-const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, dungeons };
+const files = { shrines, towers, places, labels, koroks, bosses, guardians, enemies, materials, fountains, memories, statues, regions, dungeons };
 const index = { generatedAt: new Date().toISOString(), categories: {} };
 for (const [name, rows] of Object.entries(files)) {
   await writeFile(path.join(OUT, `${name}.json`), JSON.stringify(rows), 'utf8');

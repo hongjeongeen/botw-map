@@ -1,7 +1,7 @@
 import { CATEGORIES } from '../data/categories.js';
 import { loadAndKeep, getLoaded } from '../data/loader.js';
 import { state, setSetting, isDone, doneCount, on } from '../state/store.js';
-import { esc } from '../util.js';
+import { esc, norm } from '../util.js';
 import { chestsHtml } from '../map/popup.js';
 import { swatchHtml, iconImg } from '../map/icons.js';
 
@@ -10,6 +10,7 @@ import { swatchHtml, iconImg } from '../map/icons.js';
  */
 export function createLayersPanel({ section, index, dungeons }) {
   const openSub = new Set();      // 펼쳐진 종류별 목록
+  const subFilter = new Map();    // 카테고리 → 종류 검색어
   const openDungeon = new Set();
   const totalChests = Object.values(index.categories).reduce((n, c) => n + (c.chests ?? 0), 0);
 
@@ -33,13 +34,17 @@ export function createLayersPanel({ section, index, dungeons }) {
     }
     const hidden = new Set(state.settings.hiddenSub[cat.id] ?? []);
     const items = [...counts.entries()].sort((a, b) => b[1].n - a[1].n);
+    const q = norm(subFilter.get(cat.id) ?? '');
+    const shown = items.filter(([name]) => !q || norm(name).includes(q));
     return `
+      <input class="input sub-filter" type="search" data-sub-filter="${cat.id}" placeholder="종류 검색 (예: 버섯, 보코블린)" value="${esc(subFilter.get(cat.id) ?? '')}" autocomplete="off">
       <div class="sub-actions">
-        <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="1">모두 켜기</button>
-        <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="0">모두 끄기</button>
+        <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="1">${q ? '검색된 것 켜기' : '모두 켜기'}</button>
+        <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="0">${q ? '검색된 것 끄기' : '모두 끄기'}</button>
+        <span class="muted small">${q ? `${shown.length}/${items.length}종` : `${items.length}종`}</span>
       </div>
       ${items.map(([name, { n, sample }]) => `
-        <label class="row sub-row">
+        <label class="row sub-row" data-sub-row="${esc(name)}" ${q && !norm(name).includes(q) ? 'hidden' : ''}>
           <input type="checkbox" data-subcat="${cat.id}" data-sub-name="${esc(name)}" ${hidden.has(name) ? '' : 'checked'}>
           ${swatchHtml(cat, sample)}${esc(name)}<span class="count">${n}</span>
         </label>`).join('')}`;
@@ -109,11 +114,15 @@ export function createLayersPanel({ section, index, dungeons }) {
     }
     const all = ev.target.closest('[data-sub-all]');
     if (all) {
+      // 검색어가 있으면 검색된 종류만, 없으면 전체를 켜거나 끈다
       const id = all.dataset.subAll;
       const rows = getLoaded(id) ?? [];
       const cat = CATEGORIES.find((c) => c.id === id);
-      const hidden = all.dataset.on === '1' ? [] : [...new Set(rows.map((r) => r[cat.subtypes]))];
-      setSetting('hiddenSub', { ...state.settings.hiddenSub, [id]: hidden });
+      const q = norm(subFilter.get(id) ?? '');
+      const names = [...new Set(rows.map((r) => r[cat.subtypes]))].filter((n) => !q || norm(n).includes(q));
+      const hidden = new Set(state.settings.hiddenSub[id] ?? []);
+      for (const n of names) (all.dataset.on === '1' ? hidden.delete(n) : hidden.add(n));
+      setSetting('hiddenSub', { ...state.settings.hiddenSub, [id]: [...hidden] });
       return;
     }
     const d = ev.target.closest('details.dungeon');
@@ -121,6 +130,27 @@ export function createLayersPanel({ section, index, dungeons }) {
       // toggle 이벤트는 다음 틱에 반영되므로 현재 상태의 반대를 기록
       d.open ? openDungeon.delete(d.dataset.dungeon) : openDungeon.add(d.dataset.dungeon);
     }
+  });
+
+  // 종류 검색: 다시 그리지 않고 행만 숨긴다 (입력 포커스 유지)
+  section.addEventListener('input', (ev) => {
+    const t = ev.target;
+    if (!t.dataset.subFilter) return;
+    const id = t.dataset.subFilter;
+    subFilter.set(id, t.value);
+    const q = norm(t.value);
+    const box = t.closest('.sub-list');
+    let shown = 0, total = 0;
+    for (const row of box.querySelectorAll('[data-sub-row]')) {
+      const ok = !q || norm(row.dataset.subRow).includes(q);
+      row.hidden = !ok;
+      total++;
+      if (ok) shown++;
+    }
+    const [onBtn, offBtn, countEl] = box.querySelectorAll('.sub-actions > *');
+    onBtn.textContent = q ? '검색된 것 켜기' : '모두 켜기';
+    offBtn.textContent = q ? '검색된 것 끄기' : '모두 끄기';
+    countEl.textContent = q ? `${shown}/${total}종` : `${total}종`;
   });
 
   on('progress', render);

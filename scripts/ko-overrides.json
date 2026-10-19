@@ -13,12 +13,14 @@
     "materials": "소재",
     "fountains": "대요정의 샘",
     "memories": "사진기의 기억",
+    "statues": "여신상",
+    "regions": "지역 경계선",
     "chests": "보물 상자",
     "dungeons": "던전",
     "pins": "맵 핀",
     "myLocation": "현재 위치"
   },
-  "_출처_categories": "가디언/맵 핀/현재 위치: LayoutMsg/AppMap_00.msyt(0013, 0002, 0012). 대요정의 샘: StaticMsg/LocationMarker.msyt(WeaponCureSpring). 시커 타워/코로그 열매/신수: 나무위키·Zelda Wiki(공식 한국어판 기준). 사진기의 기억: Zelda Wiki. 강적/몬스터/소재/마을·시설/지명/던전은 게임 용어가 아닌 UI 분류명(자체 작성)",
+  "_출처_categories": "여신상: EventFlowMsg/Npc_OasisGoddess.msyt 대사('여기에 있는 여신상은…'). 가디언/맵 핀/현재 위치: LayoutMsg/AppMap_00.msyt(0013, 0002, 0012). 대요정의 샘: StaticMsg/LocationMarker.msyt(WeaponCureSpring). 시커 타워/코로그 열매/신수: 나무위키·Zelda Wiki(공식 한국어판 기준). 사진기의 기억: Zelda Wiki. 강적/몬스터/소재/마을·시설/지명/던전은 게임 용어가 아닌 UI 분류명(자체 작성)",
 
   "placeKinds": {
     "Village": "마을",

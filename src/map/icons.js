@@ -48,6 +48,7 @@ export function iconKeyFor(cat, e) {
     case 'shrines': return 'shrine';
     case 'fountains': return 'fountain';
     case 'memories': return 'memory';
+    case 'statues': return 'statue';
     case 'koroks': return 'seed';
     case 'guardians': return 'guardian';
     case 'places': return PLACE_ICON[e?.kind] ?? 'settlement';
@@ -58,7 +59,7 @@ export function iconKeyFor(cat, e) {
 }
 
 /** 카테고리 대표 아이콘 (패널 행) */
-export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', koroks: 'seed', bosses: 'lynel', guardians: 'guardian' };
+export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', koroks: 'seed', bosses: 'lynel', guardians: 'guardian' };
 
 export const iconImg = (key, cls = 'inline-icon') => `<img class="${cls}" src="${iconUrl(key)}" alt="">`;
 

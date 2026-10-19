@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import * as C from './mapConfig.js';
 import { GameCRS, MAP_BOUNDS, toLatLng } from './crs.js';
+import { ZoomBar } from './zoomBar.js';
 
 /**
  * 지도 생성. lastView = { x, z, zoom } 가 있으면 그 위치로, 없으면 전체 맵이 보이게.
@@ -15,7 +16,7 @@ export function createMap(el, lastView) {
     zoomControl: false,
     attributionControl: false,
   });
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
+  new ZoomBar({ position: 'bottomright' }).addTo(map);
 
   L.tileLayer(C.TILE_URL, {
     tileSize: C.TILE_SIZE,
