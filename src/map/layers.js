@@ -6,12 +6,14 @@ import { IconMarker } from './canvasIcons.js';
 // 모든 캔버스 마커가 공유하는 렌더러. tolerance = 터치 히트 영역 확장(px)
 export const canvas = L.canvas({ tolerance: 8 });
 
-// 캔버스 아이콘 가로 폭(px)
+// 캔버스 아이콘 그림 크기(px, 긴 변 기준)
 const CANVAS_ICON_WIDTH = { koroks: 22, bosses: 28, guardians: 26, materials: 22, chests: 22, ores: 22 };
+// 랜드마크 아이콘 그림 크기(px). 캔버스 여백과 무관하게 모든 아이콘이 같은 크기로 보인다
+const ICON_CONTENT_PX = 28;
 
 /** DOM 마커용 L.icon (랜드마크). scale: 줌이 낮을 때 축소 */
 export function markerIcon(cat, key, done, scale = 1) {
-  const [w, h] = iconSizeFor(key, Math.round(30 * scale));
+  const [w, h] = iconSizeFor(key, Math.round(ICON_CONTENT_PX * scale));
   return L.icon({
     iconUrl: iconUrl(key),
     iconSize: [w, h],

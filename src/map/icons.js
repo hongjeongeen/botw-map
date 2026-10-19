@@ -46,10 +46,20 @@ export function colorFor(cat, e) {
   if (cat.id === 'ores') return e?.name === '희귀 광석' ? '#ffd54f' : e?.name === '야광석' ? '#64b5f6' : '#cfd8dc';
   return cat.color;
 }
-/** 가로 폭이 width(px)가 되도록 비율 유지 */
-export function iconSizeFor(key, width) {
+// 각 PNG 에서 실제 그림(불투명 부분)이 차지하는 크기 [가로, 세로]. 캔버스 여백이 제각각이라 그림 크기 기준으로 맞춘다
+const CONTENT = {
+  tower: [28, 39], shrine: [26, 27], village: [30, 30], stable: [30, 30], settlement: [27, 27], lab: [31, 25],
+  armor: [30, 30], dye: [30, 30], jewelry: [30, 30], inn: [30, 30], store: [30, 30], fountain: [29, 29],
+  memory: [30, 28], seed: [30, 28], lynel: [29, 30], hinox: [30, 30], talus: [26, 30], molduga: [29, 30],
+  guardian: [32, 28], pot: [30, 27], treasure: [30, 25], statue: [24, 30], raft: [27, 30], sidequest: [30, 23],
+  hotspring: [31, 29], fairy: [29, 30], dragon: [30, 27], ore_common: [30, 29], ore_rare: [30, 29], ore_luminous: [30, 29],
+};
+
+/** 그림의 긴 변이 target(px)이 되도록 비율 유지한 표시 크기 [가로, 세로] */
+export function iconSizeFor(key, target) {
   const [, w, h] = PNG[key];
-  const s = width / w;
+  const [cw, ch] = CONTENT[key] ?? [w, h];
+  const s = target / Math.max(cw, ch);
   return [Math.round(w * s), Math.round(h * s)];
 }
 
