@@ -11,7 +11,8 @@ export function createMap(el, lastView) {
     crs: GameCRS,
     minZoom: C.MIN_ZOOM,
     maxZoom: C.MAX_ZOOM,
-    maxBounds: MAP_BOUNDS.pad(0.1),
+    // 지도 가장자리 항목의 팝업이 화면 안으로 들어올 수 있도록 바깥 여유를 넉넉히 (팝업 자동 이동이 한계에 막히지 않게)
+    maxBounds: MAP_BOUNDS.pad(0.5),
     maxBoundsViscosity: 1.0,
     zoomControl: false,
     attributionControl: false,
