@@ -22,6 +22,16 @@ export function createLayersPanel({ section, index, dungeons }) {
     return `${done}/${total}`;
   }
 
+  // 종류 일부만 표시 중이면 행에 알려준다 (검색 '이 종류만' 뒤에 되돌리기 쉽게)
+  function kindStatus(cat) {
+    if (!cat.subtypes) return '';
+    const hidden = state.settings.hiddenSub[cat.id]?.length ?? 0;
+    if (!hidden) return '';
+    const rows = getLoaded(cat.id);
+    const total = rows ? new Set(rows.map((r) => r[cat.subtypes])).size : null;
+    return `<span class="hint">종류 ${total != null ? `${Math.max(total - hidden, 0)}/${total}` : `${hidden}개 숨김`}</span>`;
+  }
+
   function subListHtml(cat) {
     const rows = getLoaded(cat.id);
     if (!rows) return '<div class="muted small">불러오는 중…</div>';
@@ -80,6 +90,7 @@ export function createLayersPanel({ section, index, dungeons }) {
             ${swatchHtml(cat)}
             ${esc(cat.label)}
             ${cat.minZoom > 1 ? `<span class="hint">(줌 ${cat.minZoom}+)</span>` : ''}
+            ${kindStatus(cat)}
             <span class="count">${countText(cat)}</span>
           </label>
           ${cat.subtypes ? `

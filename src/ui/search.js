@@ -16,7 +16,7 @@ export function createSearchPanel({ section, onPick, onPickKind }) {
       <input id="q" class="input" type="search" placeholder="이름·종류 검색 (예: 쌍둥이, 마오누, 냄비, 고고)" autocomplete="off" enterkeyhint="search">
       <div id="result-info" class="muted small"></div>
     </div>
-    <div class="muted small" style="margin:6px 0">가운뎃점·띄어쓰기는 무시합니다. Enter를 누르면 첫 번째 결과로 이동합니다. 종류 결과의 <b>이것만</b>을 누르면 그 종류만 지도에 표시합니다.</div>
+    <div class="muted small" style="margin:6px 0">가운뎃점·띄어쓰기는 무시합니다. Enter를 누르면 첫 번째 결과로 이동합니다. 종류(소재·몬스터 등) 결과를 누르면 <b>그 종류만</b> 지도에 표시하고 가까운 곳으로 이동합니다. 지금 보이는 종류에 더하려면 <b>추가</b>를 누르세요.</div>
     <ul id="results" class="list"></ul>`;
   const input = section.querySelector('#q');
   const info = section.querySelector('#result-info');
@@ -68,21 +68,22 @@ export function createSearchPanel({ section, onPick, onPickKind }) {
     info.textContent = scored.length ? `${scored.length}개 결과${scored.length > MAX_RESULTS ? ` 중 ${MAX_RESULTS}개 표시` : ''}` : '';
     list.innerHTML = hits.length
       ? hits.map((h, i) => h.kind
-        ? `<li data-i="${i}">${swatchHtml(h.cat, h.entries[0])}<span>${esc(h.e.name)}<div class="muted small">${esc(h.cat.label)} 종류 · ${h.entries.length.toLocaleString()}곳 · 가까운 곳으로 이동</div></span><button type="button" class="btn small" data-only="${i}">이것만</button></li>`
+        ? `<li data-i="${i}">${swatchHtml(h.cat, h.entries[0])}<span>${esc(h.e.name)}<div class="muted small">${esc(h.cat.label)} 종류 · ${h.entries.length.toLocaleString()}곳 · 이 종류만 보기</div></span><button type="button" class="btn small" data-add="${i}" title="지금 보이는 종류에 더하기">추가</button></li>`
         : `<li data-i="${i}">${swatchHtml(h.cat, h.e)}<span>${esc(h.e.name)}${h.e.sub ? `<div class="muted small">${esc(h.e.sub)}</div>` : ''}</span><span class="meta">${esc(h.cat.label)}</span></li>`).join('')
       : '<li class="muted">결과가 없습니다.</li>';
   }
-  function pick(h, only = false) {
-    if (h.kind) onPickKind(h, { only });
+  function pick(h, { add = false } = {}) {
+    input.blur(); // 모바일 키보드 내리기
+    if (h.kind) onPickKind(h, { only: !add });
     else onPick(h.e, CAT_BY_ID[h.cat.id]);
   }
   input.addEventListener('input', run);
   input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter' && hits.length) { ev.preventDefault(); pick(hits[0]); input.blur(); }
+    if (ev.key === 'Enter' && hits.length) { ev.preventDefault(); pick(hits[0]); }
   });
   list.addEventListener('click', (ev) => {
-    const only = ev.target.closest('[data-only]');
-    if (only) { pick(hits[+only.dataset.only], true); return; }
+    const add = ev.target.closest('[data-add]');
+    if (add) { pick(hits[+add.dataset.add], { add: true }); return; }
     const li = ev.target.closest('li[data-i]');
     if (li) pick(hits[+li.dataset.i]);
   });

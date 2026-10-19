@@ -321,11 +321,13 @@ details.dungeon summary .count { margin-left: auto; color: var(--muted); }
     border-right: 0;
     border-top: 1px solid var(--border);
     border-radius: 16px 16px 0 0;
-    transform: translateY(110%);
-    transition: transform .2s ease-out;
+    /* 자기 높이 + 하단 바 높이 + 여유만큼 내려 내용이 짧아도 완전히 화면 밖으로 */
+    transform: translateY(calc(100% + var(--bar-h) + env(safe-area-inset-bottom) + 24px));
+    visibility: hidden;
+    transition: transform .2s ease-out, visibility 0s linear .2s;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, .5);
   }
-  #panel.open { transform: none; }
+  #panel.open { transform: none; visibility: visible; transition: transform .2s ease-out; }
   #panel.tall { max-height: 88dvh; }
   #panel .handle {
     display: block;
