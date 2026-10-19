@@ -31,38 +31,14 @@ export const PNG = {
   sidequest: ['sidequest.png', 30, 23],
 };
 
-// PNG 가 없는 항목은 직접 그린 SVG (data URI). [url, 가로, 세로]
-const svgIcon = (body) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">${body}</svg>`)}`;
-const dragonSvg = (color) => svgIcon(
-  `<path d="M8 42 C18 18 28 18 32 32 C36 46 46 46 56 22" fill="none" stroke="#1d1d1d" stroke-width="12" stroke-linecap="round"/>
-   <path d="M8 42 C18 18 28 18 32 32 C36 46 46 46 56 22" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>
-   <circle cx="56" cy="22" r="7" fill="${color}" stroke="#1d1d1d" stroke-width="3"/><circle cx="58" cy="20" r="2" fill="#1d1d1d"/>`,
-);
-const oreSvg = (gem) => svgIcon(
-  `<path d="M8 50 L18 26 L32 18 L48 24 L56 48 Z" fill="#8a8f93" stroke="#1d1d1d" stroke-width="3" stroke-linejoin="round"/>
-   <path d="M24 38 l7-12 7 12-7 9z" fill="${gem}" stroke="#1d1d1d" stroke-width="2" stroke-linejoin="round"/>
-   <path d="M39 42 l4-7 5 7-5 6z" fill="${gem}" stroke="#1d1d1d" stroke-width="2" stroke-linejoin="round"/>`,
-);
-Object.assign(PNG, {
-  ore: [oreSvg('#e0e0e0'), 30, 30],
-  ore_rare: [oreSvg('#ffd54f'), 30, 30],
-  ore_luminous: [oreSvg('#64b5f6'), 30, 30],
-  hotspring: [svgIcon(
-    `<ellipse cx="32" cy="46" rx="24" ry="10" fill="#5fb3c9" stroke="#1d1d1d" stroke-width="3"/>
-     <path d="M20 36c-5-7 5-11 0-18M32 34c-5-7 5-11 0-18M44 36c-5-7 5-11 0-18" fill="none" stroke="#1d1d1d" stroke-width="7" stroke-linecap="round"/>
-     <path d="M20 36c-5-7 5-11 0-18M32 34c-5-7 5-11 0-18M44 36c-5-7 5-11 0-18" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`,
-  ), 30, 30],
-  fairy: [svgIcon(
-    `<path d="M26 32 C8 18 6 40 24 42 Z M38 32 C56 18 58 40 40 42 Z" fill="#fff" stroke="#1d1d1d" stroke-width="3" stroke-linejoin="round"/>
-     <circle cx="32" cy="36" r="8" fill="#ffb6e6" stroke="#1d1d1d" stroke-width="3"/>
-     <path d="M32 10v8M23 16l4 4M41 16l-4 4" stroke="#ffe36b" stroke-width="3" stroke-linecap="round"/>`,
-  ), 30, 30],
-  dragon_fire: [dragonSvg('#ff7043'), 30, 30],
-  dragon_electric: [dragonSvg('#9ccc65'), 30, 30],
-  dragon_ice: [dragonSvg('#64b5f6'), 30, 30],
-});
+export const iconUrl = (key) => `${BASE}icons/${PNG[key][0]}`;
 
-export const iconUrl = (key) => (PNG[key][0].startsWith('data:') ? PNG[key][0] : `${BASE}icons/${PNG[key][0]}`);
+/** 아이콘이 없는 항목의 점 색. 종류별로 다른 색을 쓰는 카테고리는 여기서 결정 */
+export function colorFor(cat, e) {
+  if (cat.id === 'dragons') return /Fire/.test(e?.actor ?? '') ? '#ff7043' : /Electric/.test(e?.actor ?? '') ? '#9ccc65' : '#64b5f6';
+  if (cat.id === 'ores') return e?.name === '희귀 광석' ? '#ffd54f' : e?.name === '야광석' ? '#64b5f6' : '#cfd8dc';
+  return cat.color;
+}
 /** 가로 폭이 width(px)가 되도록 비율 유지 */
 export function iconSizeFor(key, width) {
   const [, w, h] = PNG[key];
@@ -80,12 +56,8 @@ export function iconKeyFor(cat, e) {
     case 'fountains': return 'fountain';
     case 'memories': return 'memory';
     case 'statues': return 'statue';
-    case 'hotsprings': return 'hotspring';
-    case 'fairies': return 'fairy';
-    case 'dragons': return /Fire/.test(e?.actor ?? '') ? 'dragon_fire' : /Electric/.test(e?.actor ?? '') ? 'dragon_electric' : 'dragon_ice';
     case 'koroks': return 'seed';
     case 'chests': return 'treasure';
-    case 'ores': return e?.name === '희귀 광석' ? 'ore_rare' : e?.name === '야광석' ? 'ore_luminous' : 'ore';
     case 'guardians': return 'guardian';
     case 'places': return PLACE_ICON[e?.kind] ?? 'settlement';
     case 'bosses': return BOSS_KEYS.find(([re]) => re.test(e?.actor ?? ''))?.[1] ?? null;
@@ -95,14 +67,14 @@ export function iconKeyFor(cat, e) {
 }
 
 /** 카테고리 대표 아이콘 (패널 행) */
-export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', hotsprings: 'hotspring', fairies: 'fairy', dragons: 'dragon_electric', koroks: 'seed', chests: 'treasure', ores: 'ore', bosses: 'lynel', guardians: 'guardian' };
+export const CATEGORY_ICON = { towers: 'tower', shrines: 'shrine', places: 'village', fountains: 'fountain', memories: 'memory', statues: 'statue', koroks: 'seed', chests: 'treasure', bosses: 'lynel', guardians: 'guardian' };
 
 export const iconImg = (key, cls = 'inline-icon') => `<img class="${cls}" src="${iconUrl(key)}" alt="">`;
 
-/** 목록/패널용 작은 아이콘. PNG 가 없으면 카테고리 색 점 */
+/** 목록/패널용 작은 아이콘. PNG 가 없으면 색 점 (종류별 색 반영) */
 export function swatchHtml(cat, e) {
   const key = e ? iconKeyFor(cat, e) : CATEGORY_ICON[cat.id];
-  return key ? iconImg(key, 'swatch icon') : `<span class="swatch" style="background:${cat.color}"></span>`;
+  return key ? iconImg(key, 'swatch icon') : `<span class="swatch" style="background:${colorFor(cat, e)}"></span>`;
 }
 
 // ---- 캔버스 마커용 이미지 캐시 ----

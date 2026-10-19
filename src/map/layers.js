@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { toLatLng } from './crs.js';
-import { iconKeyFor, iconUrl, iconSizeFor, getImage } from './icons.js';
+import { iconKeyFor, iconUrl, iconSizeFor, getImage, colorFor } from './icons.js';
 import { IconMarker } from './canvasIcons.js';
 
 // 모든 캔버스 마커가 공유하는 렌더러. tolerance = 터치 히트 영역 확장(px)
@@ -21,13 +21,17 @@ export function markerIcon(cat, key, done, scale = 1) {
   });
 }
 
-const dotStyle = (cat, done) => ({
-  radius: 5,
-  weight: 1,
-  color: '#141414',
-  fillColor: done ? '#8d8d8d' : cat.color,
-  fillOpacity: done ? 0.35 : 0.9,
-});
+// 점 마커 스타일. 아이콘이 없는 카테고리(온천·요정·드래곤·광석 등)는 큰 점 + 흰 테두리로 눈에 띄게
+const dotStyle = (cat, done, e) => {
+  const r = cat.dotRadius ?? 5;
+  return {
+    radius: r,
+    weight: r >= 6 ? 2 : 1,
+    color: r >= 6 ? '#ffffff' : '#141414',
+    fillColor: done ? '#8d8d8d' : colorFor(cat, e),
+    fillOpacity: done ? 0.35 : 0.95,
+  };
+};
 
 /**
  * 카테고리 하나의 마커 묶음.
@@ -48,10 +52,10 @@ export function createCategoryLayer(cat, entries, { isDone, onSelect }) {
       const [w, h] = iconSizeFor(key, CANVAS_ICON_WIDTH[cat.id] ?? 24);
       m = new IconMarker(ll, {
         renderer: canvas, bubblingMouseEvents: false, image: getImage(key), iconW: w, iconH: h, done: isDone(e.id),
-        radius: Math.ceil(Math.max(w, h) / 2) + 3, ...dotStyle(cat, isDone(e.id)),
+        ...dotStyle(cat, isDone(e.id), e), radius: Math.ceil(Math.max(w, h) / 2) + 3,
       });
     } else {
-      m = L.circleMarker(ll, { renderer: canvas, bubblingMouseEvents: false, ...dotStyle(cat, isDone(e.id)) });
+      m = L.circleMarker(ll, { renderer: canvas, bubblingMouseEvents: false, ...dotStyle(cat, isDone(e.id), e) });
     }
     m.entry = e;
     m.iconKey = key;
@@ -85,7 +89,7 @@ export function createCategoryLayer(cat, entries, { isDone, onSelect }) {
       if (!m) return;
       if (m instanceof IconMarker) m.setDone(done);
       else if (m.setIcon) m.setIcon(markerIcon(cat, m.iconKey ?? 'settlement', done, scale));
-      else m.setStyle(dotStyle(cat, done));
+      else m.setStyle(dotStyle(cat, done, m.entry));
       if (filters.hideDone && cat.trackable) apply();
     },
     /** 줌이 낮을 때 아이콘 축소 (0.55 ~ 1) */

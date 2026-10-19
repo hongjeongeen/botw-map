@@ -24,23 +24,25 @@ export function createRegionsLayer(map, rows) {
   return { cat: { id: 'regions' }, group, entries: rows, setFilters() {}, setDone() {}, visibleEntries: () => [] };
 }
 
-const ZONE_STYLE = {
-  cold: { color: '#4fc3f7', fillColor: '#4fc3f7' },
-  heat: { color: '#ffb74d', fillColor: '#ffb74d' },
-  volcano: { color: '#ff5252', fillColor: '#ff5252' },
+// 구역별 색: 서로 확실히 다른 색상(파랑/노랑/빨강). 노랑은 점선 테두리로 한 번 더 구분
+export const ZONE_STYLE = {
+  cold: { color: '#1e88e5', fillColor: '#42a5f5', fillOpacity: 0.3, weight: 2, opacity: 0.9 },
+  heat: { color: '#ffb300', fillColor: '#ffeb3b', fillOpacity: 0.3, weight: 2, opacity: 0.9, dashArray: '6 5' },
+  volcano: { color: '#e53935', fillColor: '#ff5252', fillOpacity: 0.32, weight: 2, opacity: 0.9 },
 };
 
-/** 기후 구역(추위·더위·화산) 색 면. 경계선 pane 아래, 타일 위 */
+/** 기후 구역(추위·더위·화산) 색 면. 구역마다 하나의 다중 폴리곤으로 그려 겹치는 곳이 진해지지 않게 한다 */
 export function createAreasLayer(map, rows) {
   if (!map.getPane('climate')) map.createPane('climate').style.zIndex = 340;
   const renderer = L.canvas({ pane: 'climate' });
   const group = L.layerGroup();
+  const byZone = new Map();
   for (const r of rows) {
-    const st = ZONE_STYLE[r.zone] ?? ZONE_STYLE.heat;
-    for (const poly of r.polys) {
-      const latlngs = poly.map((ring) => ring.map(([x, z]) => toLatLng(x, z)));
-      group.addLayer(L.polygon(latlngs, { renderer, pane: 'climate', interactive: false, ...st, weight: 1.5, opacity: 0.7, fillOpacity: 0.2 }));
-    }
+    if (!byZone.has(r.zone)) byZone.set(r.zone, []);
+    for (const poly of r.polys) byZone.get(r.zone).push(poly.map((ring) => ring.map(([x, z]) => toLatLng(x, z))));
+  }
+  for (const [zone, polys] of byZone) {
+    group.addLayer(L.polygon(polys, { renderer, pane: 'climate', interactive: false, ...(ZONE_STYLE[zone] ?? ZONE_STYLE.heat) }));
   }
   return { cat: { id: 'climate' }, group, entries: rows, setFilters() {}, setDone() {}, visibleEntries: () => [] };
 }

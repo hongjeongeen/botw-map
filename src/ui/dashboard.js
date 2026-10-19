@@ -44,7 +44,7 @@ export function dashboardHtml({ dungeons, open = true }) {
 
   return `
     <details class="dash" ${open ? 'open' : ''}>
-      <summary><span>탐험 진행률</span><b>${pct}%</b><span class="muted small">${done.toLocaleString()}/${total.toLocaleString()}</span></summary>
+      <summary><span class="chev" aria-hidden="true"></span><span>탐험 진행률</span><b>${pct}%</b><span class="muted small">${done.toLocaleString()}/${total.toLocaleString()}</span><span class="muted small dash-hint">${open ? '접기' : '펼치기'}</span></summary>
       <div class="prog-bar big"><i style="width:${pct}%"></i></div>
       ${bar(`${iconImg('shrine')} 사당`, sd, st, dt ? ` <span class="hint">· 추가 콘텐츠 ${dd}/${dt}</span>` : '')}
       ${bar(`${iconImg('tower')} 시커 타워`, ...towers)}

@@ -191,8 +191,12 @@ img.mk { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .85)); }
 
 /* ---------- 진행률 요약 ---------- */
 .dash { border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px 10px; margin-bottom: 10px; background: var(--panel-2); }
-.dash summary { display: flex; align-items: center; gap: 10px; min-height: 36px; cursor: pointer; font-weight: 600; }
+.dash summary { display: flex; align-items: center; gap: 10px; min-height: 40px; cursor: pointer; font-weight: 600; list-style: none; }
+.dash summary::-webkit-details-marker { display: none; }
 .dash summary b { font-size: 20px; color: var(--accent); }
+.dash summary .chev { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid var(--muted); transition: transform .15s; }
+.dash:not([open]) summary .chev { transform: rotate(-90deg); }
+.dash summary .dash-hint { margin-left: auto; }
 .prog { margin: 6px 0; }
 .prog-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
 .prog-head .count { margin-left: auto; }

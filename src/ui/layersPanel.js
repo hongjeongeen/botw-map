@@ -13,7 +13,6 @@ export function createLayersPanel({ section, index, dungeons }) {
   const openSub = new Set();      // 펼쳐진 종류별 목록
   const subFilter = new Map();    // 카테고리 → 종류 검색어
   const openDungeon = new Set();
-  let dashOpen = true;
   const totalChests = Object.values(index.categories).reduce((n, c) => n + (c.chests ?? 0), 0);
 
   function countText(cat) {
@@ -81,7 +80,7 @@ export function createLayersPanel({ section, index, dungeons }) {
   function render() {
     const s = state.settings;
     section.innerHTML = `
-      ${dashboardHtml({ dungeons, open: dashOpen })}
+      ${dashboardHtml({ dungeons, open: state.settings.dashOpen !== false })}
       <label class="row">
         <input type="checkbox" data-set="hideDone" ${s.hideDone ? 'checked' : ''}> 완료한 항목 숨기기
         <span class="count">${iconImg('treasure')} ${doneCount('chest:')}/${totalChests}</span>
@@ -148,8 +147,10 @@ export function createLayersPanel({ section, index, dungeons }) {
     }
   });
 
-  // 진행률 요약 접기/펼치기 상태 기억 (toggle 은 버블링되지 않으므로 캡처 단계에서)
-  section.addEventListener('toggle', (ev) => { if (ev.target.classList?.contains('dash')) dashOpen = ev.target.open; }, true);
+  // 진행률 요약 접기/펼치기 상태 저장 (toggle 은 버블링되지 않으므로 캡처 단계에서)
+  section.addEventListener('toggle', (ev) => {
+    if (ev.target.classList?.contains('dash') && ev.target.open !== (state.settings.dashOpen !== false)) setSetting('dashOpen', ev.target.open);
+  }, true);
 
   // 종류 검색: 다시 그리지 않고 행만 숨긴다 (입력 포커스 유지)
   section.addEventListener('input', (ev) => {
