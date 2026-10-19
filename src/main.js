@@ -56,6 +56,7 @@ async function ensureLayer(cat) {
         : cat.style === 'lines' ? createRegionsLayer(map, rows)
           : createCategoryLayer(cat, rows, { isDone: (id) => !!state.progress.done[id], onSelect: selectEntry });
       layer.setFilters({ hideDone: state.settings.hideDone, hidden: state.settings.hiddenSub[cat.id] });
+      layer.setScale?.(iconScale);
       layers[cat.id] = layer;
       return layer;
     })();
@@ -64,6 +65,19 @@ async function ensureLayer(cat) {
 }
 
 const activeLayers = () => CATEGORIES.map((c) => layers[c.id]).filter((l) => l && !(l instanceof Promise) && map.hasLayer(l.group));
+
+// 줌이 낮을 때(전체 보기)는 아이콘을 줄여 지방 이름·지형이 가려지지 않게
+const scaleForZoom = (z) => (z <= 2 ? 0.55 : z <= 3 ? 0.75 : 1);
+let iconScale = scaleForZoom(map.getZoom());
+map.on('zoomend', () => {
+  const s = scaleForZoom(map.getZoom());
+  if (s === iconScale) return;
+  iconScale = s;
+  for (const cat of CATEGORIES) {
+    const layer = layers[cat.id];
+    if (layer && !(layer instanceof Promise)) layer.setScale?.(s);
+  }
+});
 
 async function refreshVisibility() {
   const z = map.getZoom();

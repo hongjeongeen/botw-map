@@ -9,9 +9,9 @@ export const canvas = L.canvas({ tolerance: 8 });
 // 캔버스 아이콘 가로 폭(px)
 const CANVAS_ICON_WIDTH = { koroks: 22, bosses: 28, guardians: 26, materials: 22 };
 
-/** DOM 마커용 L.icon (랜드마크) */
-export function markerIcon(cat, key, done) {
-  const [w, h] = iconSizeFor(key, 30);
+/** DOM 마커용 L.icon (랜드마크). scale: 줌이 낮을 때 축소 */
+export function markerIcon(cat, key, done, scale = 1) {
+  const [w, h] = iconSizeFor(key, Math.round(30 * scale));
   return L.icon({
     iconUrl: iconUrl(key),
     iconSize: [w, h],
@@ -54,12 +54,14 @@ export function createCategoryLayer(cat, entries, { isDone, onSelect }) {
       m = L.circleMarker(ll, { renderer: canvas, bubblingMouseEvents: false, ...dotStyle(cat, isDone(e.id)) });
     }
     m.entry = e;
+    m.iconKey = key;
     m.on('click', () => onSelect(e, cat, m));
     byId.set(e.id, m);
     markers.push(m);
   }
 
   let filters = { hideDone: false, hidden: new Set() };
+  let scale = 1;
 
   function apply() {
     for (const m of markers) {
@@ -82,9 +84,24 @@ export function createCategoryLayer(cat, entries, { isDone, onSelect }) {
       const m = byId.get(id);
       if (!m) return;
       if (m instanceof IconMarker) m.setDone(done);
-      else if (m.setIcon) m.setIcon(markerIcon(cat, iconKeyFor(cat, m.entry) ?? 'settlement', done));
+      else if (m.setIcon) m.setIcon(markerIcon(cat, m.iconKey ?? 'settlement', done, scale));
       else m.setStyle(dotStyle(cat, done));
       if (filters.hideDone && cat.trackable) apply();
+    },
+    /** 줌이 낮을 때 아이콘 축소 (0.55 ~ 1) */
+    setScale(s) {
+      if (s === scale) return;
+      scale = s;
+      for (const m of markers) {
+        if (m instanceof IconMarker) {
+          const [w, h] = iconSizeFor(m.iconKey, Math.round((CANVAS_ICON_WIDTH[cat.id] ?? 24) * s));
+          m.options.iconW = w;
+          m.options.iconH = h;
+          m.setRadius(Math.ceil(Math.max(w, h) / 2) + 3); // 경계·히트 영역 갱신 + 다시 그리기
+        } else if (m.setIcon) {
+          m.setIcon(markerIcon(cat, m.iconKey ?? 'settlement', isDone(m.entry.id), s));
+        }
+      }
     },
     setFilters({ hideDone, hidden }) {
       filters = { hideDone: !!hideDone, hidden: new Set(hidden ?? []) };
