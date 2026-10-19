@@ -18,7 +18,8 @@ export const CATEGORIES = [
 
 export const CAT_BY_ID = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
 
-// 마을·시설의 종류(kind) → 아이콘 키. 나머지(상점 5종)는 'shop'
-export const PLACE_ICON = { '마을': 'village', '마구간': 'stable', '하이랄 성': 'castle', '주요 장소': 'poi', '고대 연구소': 'lab' };
-
-export const CAT_ICON = { towers: 'tower', shrines: 'shrine', fountains: 'fountain', memories: 'memory' };
+// 마을·시설의 종류(kind) → public/icons 아이콘 키
+export const PLACE_ICON = {
+  '마을': 'village', '마구간': 'stable', '하이랄 성': 'settlement', '주요 장소': 'settlement', '고대 연구소': 'lab',
+  '방어구점': 'armor', '염색숍': 'dye', '보석점': 'jewelry', '여관': 'inn', '만물상': 'store',
+};

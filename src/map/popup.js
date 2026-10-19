@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import { esc } from '../util.js';
 import { isDone, state } from '../state/store.js';
+import { iconKeyFor, iconImg } from './icons.js';
 
 // 팝업은 하나를 재사용한다 (마커 수천 개에 bindPopup 하지 않음)
 const popup = L.popup({
@@ -17,7 +18,7 @@ export function chestsHtml(chests, ownerId) {
   const show = state.settings.showChestItems;
   return `
     <details class="pp-chests" open>
-      <summary>보물 상자 ${chests.length}개 <span class="muted">(${done}/${chests.length})</span></summary>
+      <summary>${iconImg('treasure')} 보물 상자 ${chests.length}개 <span class="muted">(${done}/${chests.length})</span></summary>
       <ul class="chest-list" data-owner="${esc(ownerId)}">
         ${chests.map((c, i) => `
           <li>
@@ -32,10 +33,11 @@ export function chestsHtml(chests, ownerId) {
 export function renderEntry(e, cat) {
   const kind = e.kind && e.kind !== e.name ? ` · ${esc(e.kind)}` : '';
   const coords = `X ${Math.round(e.x)} · Z ${Math.round(e.z)}${Number.isFinite(e.y) ? ` · 높이 ${Math.round(e.y)}` : ''}`;
+  const key = iconKeyFor(cat, e);
   return `
     <div class="pp">
       <div class="pp-cat muted small">${esc(cat.label)}${kind}${e.dlc ? ' · 추가 콘텐츠' : ''}</div>
-      <div class="pp-name">${esc(e.name)}</div>
+      <div class="pp-head">${key ? iconImg(key, 'pp-icon') : ''}<div class="pp-name">${esc(e.name)}</div></div>
       ${e.sub ? `<div class="pp-sub">${esc(e.sub)}</div>` : ''}
       ${e.code ? `<div class="pp-sub">번호 <b>${esc(e.code)}</b></div>` : ''}
       <div class="pp-coords muted small">${coords}</div>

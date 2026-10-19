@@ -10,6 +10,7 @@ import { createCategoryLayer } from './map/layers.js';
 import { createLabelLayer } from './map/labels.js';
 import { openEntryPopup, openHtmlPopup, closePopup } from './map/popup.js';
 import { createPinsLayer } from './map/pins.js';
+import { preloadIcons } from './map/icons.js';
 import { createMyLocation } from './map/myLocation.js';
 import { initPanel } from './ui/panel.js';
 import { createLayersPanel } from './ui/layersPanel.js';
@@ -130,7 +131,7 @@ map.on('contextmenu', (ev) => {
 });
 
 // ---------------------------------------------------------------- 패널
-const [index, dungeons] = await Promise.all([loadIndex(), loadCategory('dungeons')]);
+const [index, dungeons] = await Promise.all([loadIndex(), loadCategory('dungeons'), preloadIcons()]);
 await Promise.all(CATEGORIES.filter((c) => c.trackable).map((c) => loadAndKeep(c.id))); // 완료 수 표시용
 
 const layersPanel = createLayersPanel({ section: panel.section('layers'), index, dungeons });

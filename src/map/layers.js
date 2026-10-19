@@ -1,20 +1,23 @@
 import L from 'leaflet';
 import { toLatLng } from './crs.js';
-import { ICONS } from './icons.js';
-import { PLACE_ICON, CAT_ICON } from '../data/categories.js';
+import { iconKeyFor, iconUrl, iconSizeFor, getImage } from './icons.js';
+import { IconMarker } from './canvasIcons.js';
 
-// 모든 점 마커가 공유하는 캔버스 렌더러. tolerance = 터치 히트 영역 확장(px)
+// 모든 캔버스 마커가 공유하는 렌더러. tolerance = 터치 히트 영역 확장(px)
 export const canvas = L.canvas({ tolerance: 8 });
 
-const iconKey = (cat, e) => (cat.id === 'places' ? PLACE_ICON[e.kind] ?? 'shop' : CAT_ICON[cat.id] ?? 'poi');
+// 캔버스 아이콘 가로 폭(px)
+const CANVAS_ICON_WIDTH = { koroks: 22, bosses: 28, guardians: 26, materials: 22 };
 
-export function divIconFor(cat, e, done) {
-  return L.divIcon({
+/** DOM 마커용 L.icon (랜드마크) */
+export function markerIcon(cat, key, done) {
+  const [w, h] = iconSizeFor(key, 30);
+  return L.icon({
+    iconUrl: iconUrl(key),
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h / 2],
+    popupAnchor: [0, -h / 2],
     className: `mk mk-${cat.id}${done ? ' done' : ''}`,
-    html: ICONS[iconKey(cat, e)],
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -12],
   });
 }
 
@@ -37,9 +40,19 @@ export function createCategoryLayer(cat, entries, { isDone, onSelect }) {
 
   for (const e of entries) {
     const ll = toLatLng(e.x, e.z);
-    const m = cat.style === 'icon'
-      ? L.marker(ll, { icon: divIconFor(cat, e, isDone(e.id)), title: e.name, keyboard: false })
-      : L.circleMarker(ll, { renderer: canvas, bubblingMouseEvents: false, ...dotStyle(cat, isDone(e.id)) });
+    const key = iconKeyFor(cat, e);
+    let m;
+    if (cat.style === 'icon') {
+      m = L.marker(ll, { icon: markerIcon(cat, key ?? 'settlement', isDone(e.id)), title: e.name, keyboard: false });
+    } else if (key) {
+      const [w, h] = iconSizeFor(key, CANVAS_ICON_WIDTH[cat.id] ?? 24);
+      m = new IconMarker(ll, {
+        renderer: canvas, bubblingMouseEvents: false, image: getImage(key), iconW: w, iconH: h, done: isDone(e.id),
+        radius: Math.ceil(Math.max(w, h) / 2) + 3, ...dotStyle(cat, isDone(e.id)),
+      });
+    } else {
+      m = L.circleMarker(ll, { renderer: canvas, bubblingMouseEvents: false, ...dotStyle(cat, isDone(e.id)) });
+    }
     m.entry = e;
     m.on('click', () => onSelect(e, cat, m));
     byId.set(e.id, m);
@@ -68,7 +81,8 @@ export function createCategoryLayer(cat, entries, { isDone, onSelect }) {
     setDone(id, done) {
       const m = byId.get(id);
       if (!m) return;
-      if (m.setIcon) m.setIcon(divIconFor(cat, m.entry, done));
+      if (m instanceof IconMarker) m.setDone(done);
+      else if (m.setIcon) m.setIcon(markerIcon(cat, iconKeyFor(cat, m.entry) ?? 'settlement', done));
       else m.setStyle(dotStyle(cat, done));
       if (filters.hideDone && cat.trackable) apply();
     },

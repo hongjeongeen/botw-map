@@ -1,6 +1,7 @@
 import { CATEGORIES, CAT_BY_ID } from '../data/categories.js';
 import { loadAndKeep } from '../data/loader.js';
 import { esc, norm } from '../util.js';
+import { swatchHtml } from '../map/icons.js';
 
 /** 검색 탭: 검색 가능한 카테고리(지명·타워·사당·마을·대요정·기억)를 한국어 이름으로 찾는다 */
 export function createSearchPanel({ section, onPick }) {
@@ -33,7 +34,7 @@ export function createSearchPanel({ section, onPick }) {
       if (item.key.includes(q)) { hits.push(item); if (hits.length >= 50) break; }
     }
     list.innerHTML = hits.length
-      ? hits.map(({ e, cat }, i) => `<li data-i="${i}"><span class="swatch" style="background:${cat.color}"></span><span>${esc(e.name)}${e.sub ? `<div class="muted small">${esc(e.sub)}</div>` : ''}</span><span class="meta">${esc(cat.label)}</span></li>`).join('')
+      ? hits.map(({ e, cat }, i) => `<li data-i="${i}">${swatchHtml(cat, e)}<span>${esc(e.name)}${e.sub ? `<div class="muted small">${esc(e.sub)}</div>` : ''}</span><span class="meta">${esc(cat.label)}</span></li>`).join('')
       : '<li class="muted">결과가 없습니다.</li>';
     list._hits = hits;
   }

@@ -1,9 +1,9 @@
 import L from 'leaflet';
 import { toLatLng, toGame } from './crs.js';
-import { ICONS } from './icons.js';
+import { meSvg } from './icons.js';
 import { state, setSetting } from '../state/store.js';
 
-const meIcon = L.divIcon({ className: 'mk mk-me', html: ICONS.me, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14] });
+const meIcon = L.divIcon({ className: 'mk mk-me', html: meSvg, iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14] });
 
 /** 드래그 가능한 '현재 위치' 마커 (게임 맵에 좌표가 없으므로 직접 옮긴다) */
 export function createMyLocation(map, { onMove } = {}) {

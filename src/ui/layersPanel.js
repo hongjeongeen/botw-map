@@ -3,6 +3,7 @@ import { loadAndKeep, getLoaded } from '../data/loader.js';
 import { state, setSetting, isDone, doneCount, on } from '../state/store.js';
 import { esc } from '../util.js';
 import { chestsHtml } from '../map/popup.js';
+import { swatchHtml, iconImg } from '../map/icons.js';
 
 /**
  * 레이어 탭: 카테고리 켜기/끄기 + 완료 수, 종류별 필터, 던전 보물 상자 목록
@@ -23,19 +24,24 @@ export function createLayersPanel({ section, index, dungeons }) {
   function subListHtml(cat) {
     const rows = getLoaded(cat.id);
     if (!rows) return '<div class="muted small">불러오는 중…</div>';
-    const counts = new Map();
-    for (const r of rows) counts.set(r[cat.subtypes], (counts.get(r[cat.subtypes]) ?? 0) + 1);
+    const counts = new Map(); // 종류 → { n, sample }
+    for (const r of rows) {
+      const k = r[cat.subtypes];
+      const c = counts.get(k) ?? { n: 0, sample: r };
+      c.n++;
+      counts.set(k, c);
+    }
     const hidden = new Set(state.settings.hiddenSub[cat.id] ?? []);
-    const items = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    const items = [...counts.entries()].sort((a, b) => b[1].n - a[1].n);
     return `
       <div class="sub-actions">
         <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="1">모두 켜기</button>
         <button type="button" class="btn small" data-sub-all="${cat.id}" data-on="0">모두 끄기</button>
       </div>
-      ${items.map(([name, n]) => `
+      ${items.map(([name, { n, sample }]) => `
         <label class="row sub-row">
           <input type="checkbox" data-subcat="${cat.id}" data-sub-name="${esc(name)}" ${hidden.has(name) ? '' : 'checked'}>
-          ${esc(name)}<span class="count">${n}</span>
+          ${swatchHtml(cat, sample)}${esc(name)}<span class="count">${n}</span>
         </label>`).join('')}`;
   }
 
@@ -59,14 +65,14 @@ export function createLayersPanel({ section, index, dungeons }) {
     section.innerHTML = `
       <label class="row">
         <input type="checkbox" data-set="hideDone" ${s.hideDone ? 'checked' : ''}> 완료한 항목 숨기기
-        <span class="count">보물 상자 ${doneCount('chest:')}/${totalChests}</span>
+        <span class="count">${iconImg('treasure')} ${doneCount('chest:')}/${totalChests}</span>
       </label>
       <h3>레이어</h3>
       ${CATEGORIES.map((cat) => `
         <div class="cat" data-cat="${cat.id}">
           <label class="row">
             <input type="checkbox" data-vis="${cat.id}" ${s.visible[cat.id] ? 'checked' : ''}>
-            <span class="swatch" style="background:${cat.color}"></span>
+            ${swatchHtml(cat)}
             ${esc(cat.label)}
             ${cat.minZoom > 1 ? `<span class="hint">(줌 ${cat.minZoom}+)</span>` : ''}
             <span class="count">${countText(cat)}</span>

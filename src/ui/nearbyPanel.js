@@ -1,6 +1,7 @@
 import { esc, fmtDist } from '../util.js';
 import { distance, directionKo } from '../map/crs.js';
 import { on } from '../state/store.js';
+import { swatchHtml } from '../map/icons.js';
 
 /**
  * 주변 탭: '현재 위치' 마커 기준으로 켜져 있는 카테고리의 마커를 거리순으로 나열
@@ -27,7 +28,7 @@ export function createNearbyPanel({ section, map, myLocation, getActiveLayers, o
       <h3>가까운 순 (${rows.length}개 중 ${top.length}개)</h3>
       <ul class="list">${top.map(({ e, cat, d }, i) => `
         <li data-i="${i}">
-          <span class="swatch" style="background:${cat.color}"></span>
+          ${swatchHtml(cat, e)}
           <span>${esc(e.name)}<div class="muted small">${esc(cat.label)}${e.sub ? ` · ${esc(e.sub)}` : ''}</div></span>
           <span class="meta">${fmtDist(d)} ${directionKo(loc, e)}</span>
         </li>`).join('') || '<li class="muted">켜 둔 레이어에 항목이 없습니다.</li>'}</ul>`;

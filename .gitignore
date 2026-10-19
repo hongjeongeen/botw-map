@@ -1,4 +1,6 @@
 node_modules/
+# 아이콘 원본 보관 폴더 (실제 사용 파일은 public/icons/)
+/icon/
 dist/
 .cache/
 *.local
