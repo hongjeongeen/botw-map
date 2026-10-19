@@ -13,6 +13,7 @@ const defaultSettings = () => ({
   hiddenSub: {},          // { [catId]: [종류 이름…] } 숨긴 종류
   hideDone: false,
   showChestItems: false,  // 보물 상자 내용물 표시 (스포일러)
+  moveOnDone: true,       // 완료 체크 시 현재 위치를 그곳으로 이동
   lastView: null,         // { x, z, zoom }
   myLocation: null,       // { x, z }
 });

@@ -10,6 +10,9 @@ export function createSettingsPanel({ section }) {
         <button type="button" class="btn primary" data-action="export">JSON으로 내보내기</button>
         <label class="btn">JSON 가져오기(병합)<input type="file" accept=".json,application/json" hidden data-action="import"></label>
       </div>
+      <h3>동작</h3>
+      <label class="row"><input type="checkbox" data-set="moveOnDone" ${state.settings.moveOnDone !== false ? 'checked' : ''}> 완료 체크 시 현재 위치를 그곳으로 이동</label>
+      <div class="muted small" style="margin:-4px 0 8px 34px">사당·코로그 등을 완료로 표시하면 보통 그 자리에 있으므로, 현재 위치 마커를 자동으로 옮겨 주변 목록이 갱신되게 합니다.</div>
       <h3>표시</h3>
       <label class="row"><input type="checkbox" data-set="showChestItems" ${state.settings.showChestItems ? 'checked' : ''}> 보물 상자 내용물 기본 표시 <span class="hint">(스포일러)</span></label>
       <h3>초기화</h3>
@@ -41,6 +44,8 @@ export function createSettingsPanel({ section }) {
       t.value = '';
     } else if (t.dataset.set === 'showChestItems') {
       setSetting('showChestItems', t.checked);
+    } else if (t.dataset.set === 'moveOnDone') {
+      setSetting('moveOnDone', t.checked);
     }
   });
 

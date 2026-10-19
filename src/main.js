@@ -5,7 +5,7 @@ import { createMap } from './map/map.js';
 import { toLatLng, toGame, distance, MAP_BOUNDS } from './map/crs.js';
 import { MapButtons } from './map/mapButtons.js';
 import { CATEGORIES, CAT_BY_ID } from './data/categories.js';
-import { loadAndKeep, loadIndex, loadCategory } from './data/loader.js';
+import { loadAndKeep, loadIndex, loadCategory, getLoaded } from './data/loader.js';
 import { state, setSetting, setDone, setDoneMany, on, deletePin } from './state/store.js';
 import { createCategoryLayer } from './map/layers.js';
 import { createLabelLayer } from './map/labels.js';
@@ -185,9 +185,26 @@ const pinsPanel = createPinsPanel({
 createSettingsPanel({ section: panel.section('settings') });
 
 // ---------------------------------------------------------------- 팝업 안 버튼/체크박스 (이벤트 위임)
+/** 로드된 데이터에서 id 로 항목 찾기 (완료 체크 → 현재 위치 이동용) */
+function findEntry(id) {
+  for (const cat of CATEGORIES) {
+    const rows = getLoaded(cat.id);
+    const e = rows?.find((r) => r.id === id);
+    if (e) return e;
+  }
+  return null;
+}
+/** 완료 체크한 항목(상자면 그 상자가 있는 사당)의 자리로 현재 위치 이동 */
+function moveLocationTo(ownerId) {
+  if (state.settings.moveOnDone === false) return;
+  const e = findEntry(ownerId);
+  if (e && Number.isFinite(e.x) && Number.isFinite(e.z)) myLocation.set(e.x, e.z);
+}
 document.addEventListener('change', (ev) => {
   const id = ev.target?.dataset?.done;
-  if (id) setDone(id, ev.target.checked);
+  if (!id) return;
+  setDone(id, ev.target.checked);
+  if (ev.target.checked) moveLocationTo(ev.target.closest('.chest-list')?.dataset.owner ?? id);
 });
 document.addEventListener('click', (ev) => {
   const b = ev.target.closest('[data-action]');
@@ -218,6 +235,7 @@ document.addEventListener('click', (ev) => {
       inputs.forEach((i) => { i.checked = on; });
       const sum = box.querySelector('summary .muted');
       if (sum) sum.textContent = `(${on ? inputs.length : 0}/${inputs.length})`;
+      if (on) moveLocationTo(box.querySelector('.chest-list')?.dataset.owner);
       break;
     }
     case 'toggle-items': {
