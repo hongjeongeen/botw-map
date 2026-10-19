@@ -37,6 +37,17 @@ export function setDone(id, done) {
   emit('progress', { id, done });
 }
 
+/** 여러 항목을 한 번에 완료/해제 (상자 전체 체크 등). 저장·이벤트 1회 */
+export function setDoneMany(ids, done) {
+  const now = Date.now();
+  for (const id of ids) {
+    if (done) state.progress.done[id] = now;
+    else delete state.progress.done[id];
+  }
+  write('progress', state.progress);
+  emit('progress', { ids: [...ids], done });
+}
+
 /** 접두사로 완료 수 세기 (예: 'chest:') */
 export function doneCount(prefix) {
   let n = 0;

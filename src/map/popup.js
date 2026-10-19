@@ -26,7 +26,11 @@ export function chestsHtml(chests, ownerId) {
             <span class="chest-item${show ? '' : ' hidden'}">${esc(c.item ?? '내용 정보 없음')}</span>
           </li>`).join('')}
       </ul>
-      <button type="button" class="btn small linklike" data-action="toggle-items">${show ? '내용물 숨기기' : '내용물 보기'}</button>
+      <div class="pp-actions">
+        <button type="button" class="btn small" data-action="chests-all" data-on="1">상자 모두 체크</button>
+        <button type="button" class="btn small" data-action="chests-all" data-on="0">모두 해제</button>
+        <button type="button" class="btn small linklike" data-action="toggle-items">${show ? '내용물 숨기기' : '내용물 보기'}</button>
+      </div>
     </details>`;
 }
 

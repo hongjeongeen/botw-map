@@ -6,7 +6,7 @@ import { toLatLng, toGame, distance, MAP_BOUNDS } from './map/crs.js';
 import { MapButtons } from './map/mapButtons.js';
 import { CATEGORIES, CAT_BY_ID } from './data/categories.js';
 import { loadAndKeep, loadIndex, loadCategory } from './data/loader.js';
-import { state, setSetting, setDone, on, deletePin } from './state/store.js';
+import { state, setSetting, setDone, setDoneMany, on, deletePin } from './state/store.js';
 import { createCategoryLayer } from './map/layers.js';
 import { createLabelLayer } from './map/labels.js';
 import { createRegionsLayer } from './map/regions.js';
@@ -93,11 +93,11 @@ on('settings', ({ key }) => {
   if (key === 'visible') refreshVisibility();
   if (key === 'hideDone' || key === 'hiddenSub' || key === '*') { applyFilters(); refreshVisibility(); }
 });
-on('progress', ({ id, done }) => {
-  if (!id) return;
+on('progress', ({ id, ids, done }) => {
+  const list = ids ?? (id ? [id] : []);
   for (const cat of CATEGORIES) {
     const layer = layers[cat.id];
-    if (layer && !(layer instanceof Promise)) layer.setDone(id, done);
+    if (layer && !(layer instanceof Promise)) for (const i of list) layer.setDone(i, done);
   }
 });
 
@@ -209,6 +209,17 @@ document.addEventListener('click', (ev) => {
     case 'delete-pin':
       if (confirm('이 맵 핀을 삭제할까요?')) { closePopup(map); deletePin(d.id); }
       break;
+    case 'chests-all': {
+      // 팝업/패널의 상자 목록을 한 번에 체크·해제
+      const box = b.closest('.pp-chests');
+      const inputs = [...box.querySelectorAll('input[data-done]')];
+      const on = d.on === '1';
+      setDoneMany(inputs.map((i) => i.dataset.done), on);
+      inputs.forEach((i) => { i.checked = on; });
+      const sum = box.querySelector('summary .muted');
+      if (sum) sum.textContent = `(${on ? inputs.length : 0}/${inputs.length})`;
+      break;
+    }
     case 'toggle-items': {
       const show = !state.settings.showChestItems;
       setSetting('showChestItems', show);
