@@ -49,8 +49,17 @@ export function renderEntry(e, cat) {
       ${chestsHtml(e.chests, e.id)}
       <div class="pp-actions">
         <button type="button" class="btn small" data-action="pin-here" data-x="${e.x}" data-z="${e.z}" data-title="${esc(e.name)}" data-linked="${esc(e.id)}">맵 핀 추가</button>
+        ${guideLinksHtml(e)}
       </div>
     </div>`;
+}
+
+/** 공식 한국어 이름으로 공략 검색 (새 탭). 코로그는 번호를 함께 검색 */
+export function guideLinksHtml(e) {
+  const term = `${e.name}${e.code ? ` ${e.code}` : ''}`;
+  const google = `https://www.google.com/search?q=${encodeURIComponent(`젤다의 전설 야생의 숨결 ${term}`)}`;
+  const namu = `https://namu.wiki/Search?q=${encodeURIComponent(term)}`;
+  return `<a class="btn small" href="${google}" target="_blank" rel="noopener">구글 공략</a><a class="btn small" href="${namu}" target="_blank" rel="noopener">나무위키</a>`;
 }
 
 export function openEntryPopup(map, e, cat, latlng) {
