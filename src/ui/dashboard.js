@@ -1,6 +1,8 @@
 import { getLoaded } from '../data/loader.js';
-import { isDone } from '../state/store.js';
+import { isDone, state } from '../state/store.js';
 import { iconImg } from '../map/icons.js';
+import { CATEGORIES } from '../data/categories.js';
+import { esc } from '../util.js';
 
 function countRows(rows) {
   let d = 0;
@@ -14,6 +16,49 @@ function bar(label, done, total, extra = '') {
     <div class="prog">
       <div class="prog-head"><span>${label}</span><span class="count">${done}/${total}${extra}</span></div>
       <div class="prog-bar"><i style="width:${pct}%"></i></div>
+    </div>`;
+}
+
+/** 완료 항목 id → 표시 이름 (상자는 "사당 이름 상자 n", 코로그는 번호) */
+function labelFor(id, dungeons) {
+  if (id.startsWith('chest:')) {
+    const owners = [...(getLoaded('shrines') ?? []), ...(dungeons ?? [])];
+    for (const o of owners) {
+      const i = (o.chests ?? []).findIndex((c) => c.id === id);
+      if (i >= 0) return `${o.name} 상자 ${i + 1}`;
+    }
+    return '보물 상자';
+  }
+  for (const cat of CATEGORIES) {
+    if (!cat.trackable) continue;
+    const e = getLoaded(cat.id)?.find((r) => r.id === id);
+    if (e) return cat.id === 'chests' ? `보물 상자(${e.name})` : `${e.name}${e.code ? ` ${e.code}` : ''}`;
+  }
+  return id;
+}
+
+function timeAgo(ts) {
+  const m = Math.round((Date.now() - ts) / 60000);
+  if (m < 1) return '방금';
+  if (m < 60) return `${m}분 전`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}시간 전`;
+  return `${Math.round(h / 24)}일 전`;
+}
+
+/** 최근 완료 목록 + 해제 버튼 (실수로 체크했을 때 되돌리기) */
+export function recentHtml({ dungeons, limit = 3 }) {
+  const recent = Object.entries(state.progress.done).sort((a, b) => b[1] - a[1]).slice(0, limit);
+  if (!recent.length) return '';
+  return `
+    <div class="recent">
+      <div class="recent-head muted small">최근 완료 <span class="hint">· 잘못 눌렀으면 해제</span></div>
+      <ul>${recent.map(([id, ts]) => `
+        <li>
+          <span class="recent-name">${esc(labelFor(id, dungeons))}</span>
+          <span class="muted small">${timeAgo(ts)}</span>
+          <button type="button" class="btn small" data-undo="${esc(id)}">해제</button>
+        </li>`).join('')}</ul>
     </div>`;
 }
 

@@ -1,10 +1,10 @@
 import { CATEGORIES } from '../data/categories.js';
 import { loadAndKeep, getLoaded } from '../data/loader.js';
-import { state, setSetting, isDone, doneCount, on } from '../state/store.js';
+import { state, setSetting, isDone, setDone, doneCount, on } from '../state/store.js';
 import { esc, norm } from '../util.js';
 import { chestsHtml } from '../map/popup.js';
 import { swatchHtml, iconImg } from '../map/icons.js';
-import { dashboardHtml } from './dashboard.js';
+import { dashboardHtml, recentHtml } from './dashboard.js';
 
 /**
  * 레이어 탭: 카테고리 켜기/끄기 + 완료 수, 종류별 필터, 던전 보물 상자 목록
@@ -81,6 +81,7 @@ export function createLayersPanel({ section, index, dungeons }) {
     const s = state.settings;
     section.innerHTML = `
       ${dashboardHtml({ dungeons, open: state.settings.dashOpen !== false })}
+      ${recentHtml({ dungeons })}
       <label class="row">
         <input type="checkbox" data-set="hideDone" ${s.hideDone ? 'checked' : ''}> 완료한 항목 숨기기
         <span class="count">${iconImg('treasure')} ${doneCount('chest:')}/${totalChests}</span>
@@ -119,6 +120,8 @@ export function createLayersPanel({ section, index, dungeons }) {
   });
 
   section.addEventListener('click', async (ev) => {
+    const undo = ev.target.closest('[data-undo]');
+    if (undo) { setDone(undo.dataset.undo, false); return; }
     const sub = ev.target.closest('[data-sub]');
     if (sub) {
       const id = sub.dataset.sub;
