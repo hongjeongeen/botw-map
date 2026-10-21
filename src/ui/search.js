@@ -13,7 +13,7 @@ const MAX_RESULTS = 60;
 export function createSearchPanel({ section, onPick, onPickKind }) {
   section.innerHTML = `
     <div class="search-top">
-      <input id="q" class="input" type="search" placeholder="이름·종류 검색 (예: 쌍둥이, 마오누, 냄비, 고고)" autocomplete="off" enterkeyhint="search">
+      <input id="q" class="input" type="search" placeholder="이름·종류·코로그 번호 검색 (예: 쌍둥이, 마오누, 냄비, H23)" autocomplete="off" enterkeyhint="search">
       <div id="result-info" class="muted small"></div>
     </div>
     <div class="muted small" style="margin:6px 0">가운뎃점·띄어쓰기는 무시합니다. Enter를 누르면 첫 번째 결과로 이동합니다. 종류(소재·몬스터 등) 결과를 누르면 <b>그 종류만</b> 지도에 표시하고 가까운 곳으로 이동합니다. 지금 보이는 종류에 더하려면 <b>추가</b>를 누르세요.</div>
@@ -33,6 +33,8 @@ export function createSearchPanel({ section, onPick, onPickKind }) {
     ]);
     corpus = [];
     itemCats.forEach((cat, i) => { for (const e of itemRows[i]) corpus.push({ e, cat, name: norm(e.name), sub: norm(e.sub ?? '') }); });
+    // 코로그는 번호(H23 등)로만 검색 — 이름("코로그 열매")으로 900개가 쏟아지지 않도록
+    for (const e of await loadAndKeep('koroks')) corpus.push({ e, cat: CAT_BY_ID.koroks, name: norm(e.code), sub: '' });
     kindCats.forEach((cat, i) => {
       const groups = new Map();
       for (const e of kindRows[i]) (groups.get(e.name) ?? groups.set(e.name, []).get(e.name)).push(e);
@@ -69,7 +71,7 @@ export function createSearchPanel({ section, onPick, onPickKind }) {
     list.innerHTML = hits.length
       ? hits.map((h, i) => h.kind
         ? `<li data-i="${i}">${swatchHtml(h.cat, h.entries[0])}<span>${esc(h.e.name)}<div class="muted small">${esc(h.cat.label)} 종류 · ${h.entries.length.toLocaleString()}곳 · 이 종류만 보기</div></span><button type="button" class="btn small" data-add="${i}" title="지금 보이는 종류에 더하기">추가</button></li>`
-        : `<li data-i="${i}">${swatchHtml(h.cat, h.e)}<span>${esc(h.e.name)}${h.e.sub ? `<div class="muted small">${esc(h.e.sub)}</div>` : ''}</span><span class="meta">${esc(h.cat.label)}</span></li>`).join('')
+        : `<li data-i="${i}">${swatchHtml(h.cat, h.e)}<span>${esc(h.e.name)}${h.e.code ? ` <b>${esc(h.e.code)}</b>` : ''}${h.e.sub ? `<div class="muted small">${esc(h.e.sub)}</div>` : ''}</span><span class="meta">${esc(h.cat.label)}</span></li>`).join('')
       : '<li class="muted">결과가 없습니다.</li>';
   }
   function pick(h, { add = false } = {}) {
