@@ -16,6 +16,8 @@ export function createMap(el, lastView) {
     maxBoundsViscosity: 1.0,
     zoomControl: false,
     attributionControl: false,
+    // 줌 애니메이션 중 DOM 마커(아이콘·지명 라벨) 수백 개를 각각 움직이지 않고 끝난 뒤 한 번에 배치 → 모바일 끊김 완화
+    markerZoomAnimation: false,
   });
   new ZoomBar({ position: 'bottomright' }).addTo(map);
 
@@ -27,6 +29,7 @@ export function createMap(el, lastView) {
     bounds: MAP_BOUNDS, // 범위 밖 타일 요청 차단
     noWrap: true,
     keepBuffer: 2,
+    updateWhenZooming: false, // 줌 애니메이션 중에는 타일을 새로 요청하지 않음
   }).addTo(map);
 
   if (lastView && Number.isFinite(lastView.x) && Number.isFinite(lastView.z) && Number.isFinite(lastView.zoom)) {

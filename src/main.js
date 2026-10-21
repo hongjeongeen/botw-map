@@ -39,6 +39,7 @@ map.on('moveend', () => {
 });
 
 const panel = initPanel();
+if (import.meta.env.DEV) window.__botw = { map, L }; // 개발 중 성능 측정용
 
 // 모바일: 지도를 탭/드래그하면 바텀시트를 닫는다 (맵 핀 추가 클릭보다 먼저 등록되어야 편집 폼이 다시 열린다)
 map.on('click dragstart', () => { if (isMobile() && panel.isOpen()) panel.close(); });
@@ -88,14 +89,13 @@ async function refreshVisibility() {
     const want = !!state.settings.visible[cat.id] && z >= cat.minZoom;
     if (want) {
       const layer = await ensureLayer(cat);
-      if (!map.hasLayer(layer.group)) layer.group.addTo(map);
-      layer.refresh?.();
+      if (!map.hasLayer(layer.group)) layer.group.addTo(map); // 지명 라벨은 추가될 때 스스로 갱신
     } else {
       const layer = layers[cat.id];
       if (layer && !(layer instanceof Promise) && map.hasLayer(layer.group)) map.removeLayer(layer.group);
     }
   }
-  nearby?.render();
+  if (panel.current() === 'nearby' && (panel.isOpen() || !isMobile())) nearby?.render(); // 보고 있을 때만 재계산
 }
 map.on('zoomend', refreshVisibility);
 
