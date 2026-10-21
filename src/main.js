@@ -278,3 +278,8 @@ document.addEventListener('click', (ev) => {
 });
 
 refreshVisibility();
+
+// 홈 화면 앱: 배포본에서만 서비스 워커 등록 (개발 서버에선 캐시가 끼어들지 않게)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {});
+}

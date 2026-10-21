@@ -1,0 +1,18 @@
+{
+  "id": "/botw-map/",
+  "name": "하이랄 지도",
+  "short_name": "하이랄 지도",
+  "description": "젤다의 전설 야생의 숨결 개인용 인터랙티브 지도",
+  "lang": "ko",
+  "start_url": "/botw-map/",
+  "scope": "/botw-map/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15130f",
+  "theme_color": "#15130f",
+  "icons": [
+    { "src": "/botw-map/icons/app-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/botw-map/icons/app-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/botw-map/icons/app-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

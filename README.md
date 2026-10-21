@@ -50,7 +50,9 @@ npm run lint:ko      # 표시 문자열에 영문/가나가 섞였는지 검사
 3. 저장소 Settings → Pages → Source를 **GitHub Actions**로 설정
 4. 이후 `main`에 push할 때마다 `.github/workflows/deploy.yml`이 빌드·배포 → `https://<사용자명>.github.io/botw-map/`
 
-현재 배포 주소: **https://hongjeongeen.github.io/botw-map/** (폰에서 홈 화면에 추가해 두면 세컨드 스크린으로 쓰기 편합니다)
+현재 배포 주소: **https://hongjeongeen.github.io/botw-map/**
+
+홈 화면 앱(PWA): 폰 브라우저 메뉴에서 "홈 화면에 추가"(Android: 앱 설치)하면 주소창 없는 전체 화면 앱으로 열립니다. 같은 주소의 파일은 서비스 워커가 캐시해 오프라인에서도 앱과 마커 데이터가 뜨지만, 지도 타일은 외부 서버라 오프라인에선 보이지 않습니다. iOS에선 홈 화면 앱과 Safari의 저장소가 서로 달라 진행도를 옮기려면 설정 탭의 동기화 링크를 쓰세요.
 
 ## 주의
 
