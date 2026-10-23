@@ -47,7 +47,7 @@ function timeAgo(ts) {
 }
 
 /** 최근 완료 목록 + 해제 버튼 (실수로 체크했을 때 되돌리기) */
-export function recentHtml({ dungeons, limit = 3 }) {
+export function recentHtml({ dungeons, limit = 10 }) {
   const recent = Object.entries(state.progress.done).sort((a, b) => b[1] - a[1]).slice(0, limit);
   if (!recent.length) return '';
   return `

@@ -48,6 +48,8 @@ map.on('click dragstart', () => { if (isMobile() && panel.isOpen()) panel.close(
 const layers = {};   // catId → 레이어 객체 (또는 생성 중 Promise)
 
 function selectEntry(e, cat) {
+  // 레이어가 꺼져 있거나 줌 게이트로 숨겨진 카테고리는 어떤 경로로도 팝업을 열지 않는다
+  if (!state.settings.visible[cat.id] || map.getZoom() < cat.minZoom) return;
   openEntryPopup(map, e, cat, toLatLng(e.x, e.z));
 }
 
@@ -132,7 +134,8 @@ async function goToKind({ cat, e, entries }, { only } = {}) {
   for (const r of entries) { const d = distance(from, r); if (d < bestD) { bestD = d; best = r; } }
   if (best) {
     map.setView(toLatLng(best.x, best.z), Math.max(map.getZoom(), cat.minZoom, 6));
-    await ensureLayer(cat);
+    const layer = await ensureLayer(cat);
+    if (!map.hasLayer(layer.group)) layer.group.addTo(map); // 비동기 갱신을 기다리지 않고 바로 표시
     selectEntry(best, cat);
   }
   if (isMobile()) panel.close();
@@ -144,7 +147,11 @@ async function goTo(e, cat) {
   const ll = toLatLng(e.x, e.z);
   map.setView(ll, Math.max(map.getZoom(), Math.max(cat.minZoom, 6)));
   if (cat.style === 'label') openHtmlPopup(map, ll, `<div class="pp"><div class="pp-cat muted small">지명</div><div class="pp-name">${esc(e.name)}</div></div>`);
-  else selectEntry(e, cat);
+  else {
+    const layer = await ensureLayer(cat);
+    if (!map.hasLayer(layer.group)) layer.group.addTo(map);
+    selectEntry(e, cat);
+  }
   if (isMobile()) panel.close();
 }
 

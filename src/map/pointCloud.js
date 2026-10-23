@@ -52,10 +52,17 @@ export const PointCloud = L.Path.extend({
     return this;
   },
 
-  /** 표시 여부 갱신: fn(entry, i) → boolean */
+  /** 표시 여부 갱신: fn(entry, i) → boolean. 숨긴 점은 다시 그리기 전에도 바로 클릭 대상에서 뺀다 */
   setShow(fn) {
     for (let i = 0; i < this._entries.length; i++) this._show[i] = fn(this._entries[i], i) ? 1 : 0;
+    this._drawn = this._drawn.filter((i) => this._show[i]);
     return this.redraw();
+  },
+
+  onRemove(map) {
+    this._drawn = [];
+    this._hit = -1;
+    L.Path.prototype.onRemove.call(this, map);
   },
 
   visibleEntries() {
@@ -67,12 +74,13 @@ export const PointCloud = L.Path.extend({
   /** 클릭/호버 판정: 마지막에 그린 점 중 가장 가까운 것 */
   _containsPoint(p) {
     const o = this._lastOrigin;
-    if (!o) return false;
+    if (!o || !this._map) { this._hit = -1; return false; } // 지도에서 빠진 레이어는 클릭 대상이 아님
     const s = this._lastScale;
     const tol = (this._renderer?.options.tolerance || 0) + this.options.hitRadius;
     let best = -1;
     let bestD = tol * tol;
     for (const i of this._drawn) {
+      if (!this._show[i]) continue;
       const dx = this._x0[i] * s - o.x - p.x;
       const dy = this._y0[i] * s - o.y - p.y;
       const d = dx * dx + dy * dy;
