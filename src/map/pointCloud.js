@@ -98,7 +98,8 @@ L.Canvas.include({
     if (!this._drawing) return;
     const map = this._map;
     const ctx = this._ctx;
-    const full = !this._redrawBounds;
+    // 부분 다시 그리기라도 캔버스 전체를 덮으면(레이어 추가 직후 등) 전체로 취급해 클릭 판정 목록을 새로 만든다
+    const full = !this._redrawBounds || this._redrawBounds.contains(this._bounds);
     const vb = this._redrawBounds || this._bounds;
     const s = map.options.crs.scale(map.getZoom());
     const o = map.getPixelOrigin();
